@@ -20,10 +20,17 @@ public class WheelProperties
     [HideInInspector] public GameObject wheelObject;
     [HideInInspector] public float hitPointForce;
     [HideInInspector] public Vector3 localVelocity;
+    public float normalForce;
+    public float maxFrictionForce;
+    public float currentFrictionForce;
+    public bool slidding = false;
 }
 
 public class car : MonoBehaviour
 {
+    float coefStaticFriction = 0.85f;
+    float coefKineticFriction = 0.45f;
+
     [Header("Wheel Setup")]
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
@@ -89,6 +96,8 @@ public class car : MonoBehaviour
 
     void FixedUpdate()
     {
+        float totalSpringForce = 0f;
+
         if (wheels == null || wheels.Length == 0) return;
 
         foreach (var wheel in wheels)
@@ -157,6 +166,16 @@ public class car : MonoBehaviour
 
             wheel.localSlipDirection = totalLocalForce;
 
+            if (wheel.slidding)
+            {
+                // If we're sliding, we need to use kinetic friction
+                totalLocalForce *= coefKineticFriction;
+            } else
+            {
+                // Otherwise, use static friction
+                totalLocalForce *= coefStaticFriction;
+            }
+
             // Transform to world space
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             wheel.worldSlipDirection = totalWorldForce;
@@ -179,17 +198,28 @@ public class car : MonoBehaviour
                 springForce = Mathf.Clamp(springForce, 0f, suspensionForceClamp);
 
                 // direction is the surface normal
-                Vector3 springDir   = hit.normal * springForce;
+                Vector3 springDir = hit.normal * springForce;
                 wheel.suspensionForceDirection = springDir;
 
+                Vector3 totalForce = springDir + totalWorldForce;
+
                 // Apply total forces at contact
-                rb.AddForceAtPosition(springDir + totalWorldForce, hit.point);
+                rb.AddForceAtPosition(totalForce, hit.point);
 
                 // Move wheel visuals to the contact point + offset
                 wheelObj.position = hit.point + transform.up * wheelSize;
 
                 // store for damping next frame
                 wheel.lastSuspensionLength = hit.distance;
+
+                wheel.normalForce = springForce;
+                totalSpringForce += springForce;
+
+                wheel.maxFrictionForce = coefStaticFriction * springForce;
+
+                wheel.currentFrictionForce = totalWorldForce.magnitude; // the reason for this is to get the magnitude of the force applied to the wheel
+
+                wheel.slidding = wheel.currentFrictionForce > wheel.maxFrictionForce;
             }
             else
             {

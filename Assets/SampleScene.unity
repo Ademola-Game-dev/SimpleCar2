@@ -199,6 +199,10 @@ MonoBehaviour:
     wheelObject: {fileID: 0}
     hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
+    normalForce: 0
+    maxFrictionForce: 0
+    currentFrictionForce: 0
+    slidding: 0
   - wheelState: 1
     biDirectional: 0
     localPosition: {x: -1.14, y: 0.55, z: 1.7}
@@ -214,6 +218,10 @@ MonoBehaviour:
     wheelObject: {fileID: 0}
     hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
+    normalForce: 0
+    maxFrictionForce: 0
+    currentFrictionForce: 0
+    slidding: 0
   - wheelState: 1
     biDirectional: 0
     localPosition: {x: 1.14, y: 0.55, z: -1.7}
@@ -229,6 +237,10 @@ MonoBehaviour:
     wheelObject: {fileID: 0}
     hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
+    normalForce: 0
+    maxFrictionForce: 0
+    currentFrictionForce: 0
+    slidding: 0
   - wheelState: 1
     biDirectional: 0
     localPosition: {x: -1.14, y: 0.55, z: -1.7}
@@ -244,9 +256,13 @@ MonoBehaviour:
     wheelObject: {fileID: 0}
     hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
+    normalForce: 0
+    maxFrictionForce: 0
+    currentFrictionForce: 0
+    slidding: 0
   wheelSize: 0.53
   maxTorque: 450
-  wheelGrip: 12
+  wheelGrip: 15
   maxGrip: 4
   frictionCoWheel: 0.022
   suspensionForce: 90
