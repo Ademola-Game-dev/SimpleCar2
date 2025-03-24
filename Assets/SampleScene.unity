@@ -262,7 +262,7 @@ MonoBehaviour:
     slidding: 0
   wheelSize: 0.53
   maxTorque: 450
-  wheelGrip: 16
+  wheelGrip: 15
   maxGrip: 4
   frictionCoWheel: 0.022
   suspensionForce: 90

@@ -24,14 +24,10 @@ public class WheelProperties
     public float maxFrictionForce;
     public float currentFrictionForce;
     public bool slidding = false;
-    public float longitudinalForce;
-
-    public float rps;
 }
 
 public class car : MonoBehaviour
 {
-    float momentOfInertiaOfWheel = 0.5f;
     float coefStaticFriction = 0.85f;
     float coefKineticFriction = 0.45f;
 
@@ -81,8 +77,8 @@ public class car : MonoBehaviour
                 // Instantiate the visual wheel
                 w.wheelObject = Instantiate(wheelPrefab, transform);
                 w.wheelObject.transform.localPosition = w.localPosition;
-                w.wheelObject.transform.eulerAngles = transform.eulerAngles;
-                w.wheelObject.transform.localScale = 2f * new Vector3(wheelSize, wheelSize, wheelSize);
+                w.wheelObject.transform.eulerAngles   = transform.eulerAngles;
+                w.wheelObject.transform.localScale    = 2f * new Vector3(wheelSize, wheelSize, wheelSize);
 
                 // Calculate wheel circumference for rotation logic
                 w.wheelCircumference = 2f * Mathf.PI * wheelSize;
@@ -109,8 +105,8 @@ public class car : MonoBehaviour
             if (!wheel.wheelObject) continue;
 
             // For easy reference
-            Transform wheelObj = wheel.wheelObject.transform;
-            Transform wheelVisual = wheelObj.GetChild(0);  // the mesh is presumably a child
+            Transform wheelObj     = wheel.wheelObject.transform;
+            Transform wheelVisual  = wheelObj.GetChild(0);  // the mesh is presumably a child
 
             // Calculate steer angle if wheelState == 1
             if (wheel.wheelState == 1)
@@ -128,9 +124,9 @@ public class car : MonoBehaviour
             {
                 // For free wheels, optionally align them in direction of motion
                 RaycastHit tmpHit;
-                if (Physics.Raycast(transform.TransformPoint(wheel.localPosition),
-                                    -transform.up,
-                                    out tmpHit,
+                if (Physics.Raycast(transform.TransformPoint(wheel.localPosition), 
+                                    -transform.up, 
+                                    out tmpHit, 
                                     wheelSize * 2f))
                 {
                     Quaternion aim = Quaternion.LookRotation(rb.GetPointVelocity(tmpHit.point), transform.up);
@@ -140,7 +136,7 @@ public class car : MonoBehaviour
 
             // Determine the world position of this wheel and velocity at that point
             wheel.wheelWorldPosition = transform.TransformPoint(wheel.localPosition);
-            Vector3 velocityAtWheel = rb.GetPointVelocity(wheel.wheelWorldPosition);
+            Vector3 velocityAtWheel   = rb.GetPointVelocity(wheel.wheelWorldPosition);
 
             // KEY FIX: Get local velocity in the wheel's *actual* orientation
             // so we do not have to manually rotate by turnAngle again
@@ -149,7 +145,7 @@ public class car : MonoBehaviour
             // ENGINE + friction in the wheel's local Z axis
             // "wheel.torque" can be something like (vertical input * maxTorque), etc.
             // Adjust or clamp as needed:
-            wheel.torque = Mathf.Clamp(input.y, -1f, 1f) * maxTorque;
+            wheel.torque = Mathf.Clamp(input.y, -1f, 1f) * maxTorque / massInKg;
 
             // Rolling friction
             float rollingFrictionForce = -frictionCoWheel * wheel.localVelocity.z;
@@ -165,10 +161,8 @@ public class car : MonoBehaviour
             Vector3 totalLocalForce = new Vector3(
                 lateralFriction,
                 0f,
-                (rollingFrictionForce + wheel.longitudinalForce) / massInKg
+                rollingFrictionForce + engineForce
             );
-
-            wheel.rps +=
 
             wheel.localSlipDirection = totalLocalForce;
 
@@ -176,8 +170,7 @@ public class car : MonoBehaviour
             {
                 // If we're sliding, we need to use kinetic friction
                 totalLocalForce *= coefKineticFriction;
-            }
-            else
+            } else
             {
                 // Otherwise, use static friction
                 totalLocalForce *= coefStaticFriction;
@@ -195,11 +188,11 @@ public class car : MonoBehaviour
             if (Physics.Raycast(wheel.wheelWorldPosition, -transform.up, out hit, wheelSize * 2f))
             {
                 // how much the spring is compressed
-                float rayLen = wheelSize * 2f;
-                float compression = rayLen - hit.distance;
+                float rayLen        = wheelSize * 2f;
+                float compression   = rayLen - hit.distance; 
                 // damping is difference from last frame
-                float damping = (wheel.lastSuspensionLength - hit.distance) * dampAmount;
-                float springForce = (compression + damping) * suspensionForce;
+                float damping       = (wheel.lastSuspensionLength - hit.distance) * dampAmount;
+                float springForce   = (compression + damping) * suspensionForce;
 
                 // clamp it
                 springForce = Mathf.Clamp(springForce, 0f, suspensionForceClamp);
