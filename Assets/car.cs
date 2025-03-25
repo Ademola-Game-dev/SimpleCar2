@@ -37,8 +37,8 @@ public class car : MonoBehaviour
 
 
     float coefStaticFriction = 0.85f;
-    float coefKineticFriction = 0.55f;
-    float wheelMass = 20f;
+    float coefKineticFriction = 0.35f;
+    float wheelMass = 16f;
 
     [Header("Wheel Setup")]
     public GameObject wheelPrefab;
@@ -110,6 +110,11 @@ public class car : MonoBehaviour
         int i = 0;
         foreach (var wheel in wheels)
         {
+            // set limit to wheel.wheelRotationSpeed
+            float limit = 5000f;
+            if (wheel.wheelRotationSpeed > limit) wheel.wheelRotationSpeed = limit;
+            if (wheel.wheelRotationSpeed < -limit) wheel.wheelRotationSpeed = -limit;
+            
             if (!wheel.wheelObject) continue;
 
             // For easy reference
@@ -132,6 +137,11 @@ public class car : MonoBehaviour
             // KEY FIX: Get local velocity in the wheel's *actual* orientation
             // so we do not have to manually rotate by turnAngle again
             wheel.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
+
+            wheel.torque = Mathf.Clamp(input.y, -1f, 1f) * maxTorque;
+
+            Vector3 totalLocalForce = Vector3.zero;
+
             if (wheel.slidding)
             {
                 // expected wheel rotation speed
@@ -162,7 +172,20 @@ public class car : MonoBehaviour
 
                 if (Mathf.Abs(wheel.wheelRotationSpeed - expectedWheelRotationSpeed) < 10f) wheel.slidding = false;
 
-                
+                // --- APPLY FORCES --- !!!!!!
+                // Rolling friction
+                float rollingFrictionForce = -frictionCoWheel * wheel.localVelocity.z;
+                wheel.wheelRotationSpeed += rollingFrictionForce * Time.fixedDeltaTime;
+
+                // Lateral friction tries to cancel sideways slip
+                float lateralFriction = Mathf.Clamp(-wheelGrip * wheel.localVelocity.x, -maxGrip, maxGrip) * coefKineticFriction;
+
+                // Combine them in local space
+                totalLocalForce = new Vector3(
+                    lateralFriction,
+                    0f,
+                    frictionTorque * Time.deltaTime * wheelSize 
+                );
             } else
             {
                 // --- ROLL the wheel visually like in the original code ---
@@ -172,30 +195,25 @@ public class car : MonoBehaviour
                 // Convert that local Z speed into a rotation about X
                 wheel.wheelRotationSpeed = forwardInWheelSpace.z * 360f / wheel.wheelCircumference;
 
-                
+
+                // --- APPLY FORCES --- !!!!!!
+                // Rolling friction
+                float rollingFrictionForce = -frictionCoWheel * wheel.localVelocity.z;
+
+                // Lateral friction tries to cancel sideways slip
+                float lateralFriction = Mathf.Clamp(-wheelGrip * wheel.localVelocity.x, -maxGrip, maxGrip);
+
+                // Engine force (F = torque / radius)
+                float engineForce = wheel.torque / (wheelSize * massInKg);
+
+                // Combine them in local space
+                totalLocalForce = new Vector3(
+                    lateralFriction,
+                    0f,
+                    rollingFrictionForce + engineForce
+                );
+                totalLocalForce *= coefStaticFriction;
             }
-                
-            wheel.torque = Mathf.Clamp(input.y, -1f, 1f) * maxTorque;
-            
-            // Rolling friction
-            float rollingFrictionForce = -frictionCoWheel * wheel.localVelocity.z;
-
-            // Lateral friction tries to cancel sideways slip
-            float lateralFriction = -wheelGrip * wheel.localVelocity.x;
-            lateralFriction = Mathf.Clamp(lateralFriction, -maxGrip, maxGrip);
-
-            // Engine force (F = torque / radius)
-            float engineForce = wheel.torque / (wheelSize * massInKg);
-
-            // Combine them in local space
-            Vector3 totalLocalForce = new Vector3(
-                lateralFriction,
-                0f,
-                rollingFrictionForce + engineForce
-            );
-            totalLocalForce *= wheel.slidding ? coefKineticFriction : coefStaticFriction;
-
-            wheel.localSlipDirection = totalLocalForce;
 
 
             if (wheel.slidding)
