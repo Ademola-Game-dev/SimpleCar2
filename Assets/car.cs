@@ -38,7 +38,7 @@ public class car : MonoBehaviour
 
     float coefStaticFriction = 0.85f;
     float coefKineticFriction = 0.35f;
-    float wheelMass = 16f;
+    float wheelMass = 160f;
 
     [Header("Wheel Setup")]
     public GameObject wheelPrefab;

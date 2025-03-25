@@ -263,13 +263,13 @@ MonoBehaviour:
     wheelRotationSpeed: 0
   wheelSize: 0.53
   maxTorque: 950
-  wheelGrip: 15
-  maxGrip: 12
+  wheelGrip: 14
+  maxGrip: 7
   frictionCoWheel: 0.022
   suspensionForce: 90
   dampAmount: 2.5
   suspensionForceClamp: 200
-  massInKg: 400
+  massInKg: 1400
   input: {x: 0, y: 0}
   Forwards: 0
 --- !u!65 &19599196
