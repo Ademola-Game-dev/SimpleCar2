@@ -182,10 +182,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  skidMarkPrefab: {fileID: 2354214380114753622, guid: 04548351677ab4eccaf577c14d3f7b46, type: 3}
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
-  - wheelState: 1
-    biDirectional: 0
+  - biDirectional: 0
     localPosition: {x: 1.14, y: 0.55, z: 1.7}
     turnAngle: 23
     lastSuspensionLength: 0
@@ -203,8 +203,8 @@ MonoBehaviour:
     maxFrictionForce: 0
     currentFrictionForce: 0
     slidding: 0
-  - wheelState: 1
-    biDirectional: 0
+    wheelRotationSpeed: 0
+  - biDirectional: 0
     localPosition: {x: -1.14, y: 0.55, z: 1.7}
     turnAngle: 23
     lastSuspensionLength: 0
@@ -222,8 +222,8 @@ MonoBehaviour:
     maxFrictionForce: 0
     currentFrictionForce: 0
     slidding: 0
-  - wheelState: 1
-    biDirectional: 0
+    wheelRotationSpeed: 0
+  - biDirectional: 0
     localPosition: {x: 1.14, y: 0.55, z: -1.7}
     turnAngle: 0
     lastSuspensionLength: 0
@@ -241,8 +241,8 @@ MonoBehaviour:
     maxFrictionForce: 0
     currentFrictionForce: 0
     slidding: 0
-  - wheelState: 1
-    biDirectional: 0
+    wheelRotationSpeed: 0
+  - biDirectional: 0
     localPosition: {x: -1.14, y: 0.55, z: -1.7}
     turnAngle: 0
     lastSuspensionLength: 0
@@ -260,10 +260,11 @@ MonoBehaviour:
     maxFrictionForce: 0
     currentFrictionForce: 0
     slidding: 0
+    wheelRotationSpeed: 0
   wheelSize: 0.53
-  maxTorque: 450
+  maxTorque: 950
   wheelGrip: 15
-  maxGrip: 4
+  maxGrip: 12
   frictionCoWheel: 0.022
   suspensionForce: 90
   dampAmount: 2.5

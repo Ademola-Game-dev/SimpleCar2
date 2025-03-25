@@ -1,10 +1,10 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 [Serializable]
 public class WheelProperties
 {
-    public int wheelState = 1;  // 1 = steerable wheel, 0 = free wheel
     [HideInInspector] public float biDirectional = 0; // optional advanced usage
     public Vector3 localPosition;        // wheel anchor in the car's local space
     public float turnAngle = 30f;        // max steer angle for this wheel
@@ -24,12 +24,21 @@ public class WheelProperties
     public float maxFrictionForce;
     public float currentFrictionForce;
     public bool slidding = false;
+    [HideInInspector]
+    public float wheelRotationSpeed; // IN DEGREES PER SECOND
 }
 
 public class car : MonoBehaviour
 {
+    private List<LineRenderer> skidMarks = new List<LineRenderer>();
+    public GameObject skidMarkPrefab;
+
+
+
+
     float coefStaticFriction = 0.85f;
-    float coefKineticFriction = 0.45f;
+    float coefKineticFriction = 0.55f;
+    float wheelMass = 20f;
 
     [Header("Wheel Setup")]
     public GameObject wheelPrefab;
@@ -96,10 +105,9 @@ public class car : MonoBehaviour
 
     void FixedUpdate()
     {
-        float totalSpringForce = 0f;
-
         if (wheels == null || wheels.Length == 0) return;
 
+        int i = 0;
         foreach (var wheel in wheels)
         {
             if (!wheel.wheelObject) continue;
@@ -108,31 +116,14 @@ public class car : MonoBehaviour
             Transform wheelObj     = wheel.wheelObject.transform;
             Transform wheelVisual  = wheelObj.GetChild(0);  // the mesh is presumably a child
 
-            // Calculate steer angle if wheelState == 1
-            if (wheel.wheelState == 1)
-            {
-                float targetAngle = wheel.turnAngle * input.x; // left/right
-                Quaternion targetRot = Quaternion.Euler(0, targetAngle, 0);
-                // Lerp to the new steer angle
-                wheelObj.localRotation = Quaternion.Lerp(
-                    wheelObj.localRotation,
-                    targetRot,
-                    Time.fixedDeltaTime * 100f
-                );
-            }
-            else if (wheel.wheelState == 0 && rb.velocity.magnitude > 0.04f)
-            {
-                // For free wheels, optionally align them in direction of motion
-                RaycastHit tmpHit;
-                if (Physics.Raycast(transform.TransformPoint(wheel.localPosition), 
-                                    -transform.up, 
-                                    out tmpHit, 
-                                    wheelSize * 2f))
-                {
-                    Quaternion aim = Quaternion.LookRotation(rb.GetPointVelocity(tmpHit.point), transform.up);
-                    wheelObj.rotation = Quaternion.Lerp(wheelObj.rotation, aim, Time.fixedDeltaTime * 100f);
-                }
-            }
+            float targetAngle = wheel.turnAngle * input.x; // left/right
+            Quaternion targetRot = Quaternion.Euler(0, targetAngle, 0);
+            // Lerp to the new steer angle
+            wheelObj.localRotation = Quaternion.Lerp(
+                wheelObj.localRotation,
+                targetRot,
+                Time.fixedDeltaTime * 100f
+            );
 
             // Determine the world position of this wheel and velocity at that point
             wheel.wheelWorldPosition = transform.TransformPoint(wheel.localPosition);
@@ -141,12 +132,51 @@ public class car : MonoBehaviour
             // KEY FIX: Get local velocity in the wheel's *actual* orientation
             // so we do not have to manually rotate by turnAngle again
             wheel.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
+            if (wheel.slidding)
+            {
+                // expected wheel rotation speed
+                float expectedWheelRotationSpeed = wheelObj.InverseTransformDirection(rb.GetPointVelocity(wheel.wheelWorldPosition)).z * 360f / wheel.wheelCircumference;
 
-            // ENGINE + friction in the wheel's local Z axis
-            // "wheel.torque" can be something like (vertical input * maxTorque), etc.
-            // Adjust or clamp as needed:
-            wheel.torque = Mathf.Clamp(input.y, -1f, 1f) * maxTorque / massInKg;
+                // engine torque
+                float engineTorque = wheel.torque;
+                // friction torque (opposite to the direction of the wheel)
+                float frictionTorque = coefKineticFriction * wheel.normalForce * wheelSize * Mathf.Sign(wheel.wheelRotationSpeed - expectedWheelRotationSpeed) * massInKg;
 
+                // total torque
+                float totalTorque = engineTorque - frictionTorque;
+
+
+
+                
+
+                // wheel moment of inertia
+                float wheelInertia = 0.5f * wheelMass * wheelSize * wheelSize;
+                // Apply torque to wheel.wheelRotationSpeed
+                float angularAcceleration = totalTorque / wheelInertia;
+                // angular acceleration in degrees per second
+                wheel.wheelRotationSpeed += angularAcceleration * Mathf.Rad2Deg * Time.fixedDeltaTime;
+
+
+                if (wheel.localPosition.z < 0 && wheel.localPosition.x < 0) Debug.Log("engine torque: " + engineTorque + " friction torque: " + frictionTorque + "wheel rotations speed: " + wheel.wheelRotationSpeed + "angular acceleration: " + angularAcceleration);
+
+
+                if (Mathf.Abs(wheel.wheelRotationSpeed - expectedWheelRotationSpeed) < 10f) wheel.slidding = false;
+
+                
+            } else
+            {
+                // --- ROLL the wheel visually like in the original code ---
+                // We'll get the forward speed in the wheelObj's local space:
+                Vector3 forwardInWheelSpace = wheelObj.InverseTransformDirection(rb.GetPointVelocity(wheel.wheelWorldPosition));
+
+                // Convert that local Z speed into a rotation about X
+                wheel.wheelRotationSpeed = forwardInWheelSpace.z * 360f / wheel.wheelCircumference;
+
+                
+            }
+                
+            wheel.torque = Mathf.Clamp(input.y, -1f, 1f) * maxTorque;
+            
             // Rolling friction
             float rollingFrictionForce = -frictionCoWheel * wheel.localVelocity.z;
 
@@ -155,7 +185,7 @@ public class car : MonoBehaviour
             lateralFriction = Mathf.Clamp(lateralFriction, -maxGrip, maxGrip);
 
             // Engine force (F = torque / radius)
-            float engineForce = wheel.torque / wheelSize;
+            float engineForce = wheel.torque / (wheelSize * massInKg);
 
             // Combine them in local space
             Vector3 totalLocalForce = new Vector3(
@@ -163,18 +193,31 @@ public class car : MonoBehaviour
                 0f,
                 rollingFrictionForce + engineForce
             );
+            totalLocalForce *= wheel.slidding ? coefKineticFriction : coefStaticFriction;
 
             wheel.localSlipDirection = totalLocalForce;
 
+
             if (wheel.slidding)
             {
-                // If we're sliding, we need to use kinetic friction
-                totalLocalForce *= coefKineticFriction;
-            } else
-            {
-                // Otherwise, use static friction
-                totalLocalForce *= coefStaticFriction;
+                // Create or update the skid mark for this wheel
+                if (skidMarks.Count <= i)
+                {
+                    GameObject newSkid = Instantiate(skidMarkPrefab);
+                    skidMarks.Add(newSkid.GetComponent<LineRenderer>());
+                }
+                LineRenderer skid = skidMarks[i];
+                skid.enabled = true;
+                skid.positionCount++;
+                skid.SetPosition(skid.positionCount - 1, wheel.wheelWorldPosition);
             }
+            else
+            {
+                // Disable the skid mark when not sliding
+                if (skidMarks.Count > i)
+                    skidMarks[i].enabled = false;
+            }
+
 
             // Transform to world space
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
@@ -213,13 +256,12 @@ public class car : MonoBehaviour
                 wheel.lastSuspensionLength = hit.distance;
 
                 wheel.normalForce = springForce;
-                totalSpringForce += springForce;
 
-                wheel.maxFrictionForce = coefStaticFriction * springForce;
+                wheel.maxFrictionForce = coefStaticFriction * wheel.normalForce;
 
                 wheel.currentFrictionForce = totalWorldForce.magnitude; // the reason for this is to get the magnitude of the force applied to the wheel
 
-                wheel.slidding = wheel.currentFrictionForce > wheel.maxFrictionForce;
+                if (!wheel.slidding) wheel.slidding = wheel.currentFrictionForce > wheel.maxFrictionForce;
             }
             else
             {
@@ -227,15 +269,10 @@ public class car : MonoBehaviour
                 wheelObj.position = wheel.wheelWorldPosition - transform.up * wheelSize;
             }
 
-            // --- ROLL the wheel visually like in the original code ---
-            // We'll get the forward speed in the wheelObj's local space:
-            Vector3 forwardInWheelSpace = wheelObj.InverseTransformDirection(rb.GetPointVelocity(wheel.wheelWorldPosition));
-
-            // Convert that local Z speed into a rotation about X
-            float wheelRotationSpeed = forwardInWheelSpace.z * 360f / wheel.wheelCircumference;
-
             // Rotate the visual child
-            wheelVisual.Rotate(Vector3.right, wheelRotationSpeed * Time.fixedDeltaTime, Space.Self);
+            wheelVisual.Rotate(Vector3.right, wheel.wheelRotationSpeed * Time.fixedDeltaTime, Space.Self);
+
+            i++;
         }
     }
 
