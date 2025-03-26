@@ -26,7 +26,7 @@ public class WheelProperties
     [HideInInspector] public float angularVelocity; // rad/sec
 }
 
-public class car : MonoBehaviour
+public class Car : MonoBehaviour
 {
     float smoothTurn = 0.1f;
     float coefStaticFriction = 1.85f;
@@ -35,13 +35,10 @@ public class car : MonoBehaviour
     public WheelProperties[] wheels;
     public float wheelGripX = 8f;
     public float wheelGripZ = 42f;
-
-    [Header("Suspension")]
     public float suspensionForce = 90f;// spring constant
     public float dampAmount = 2.5f;// damping constant
     public float suspensionForceClamp = 200f;// cap on total suspension force
-    // These are updated each frame
-    [HideInInspector] public Vector2 input = Vector2.zero;// horizontal=steering, vertical=gas/brake
+    private Vector2 input = Vector2.zero;// horizontal=steering, vertical=gas/brake
     private Rigidbody rb;
 
     void Start()
@@ -50,20 +47,12 @@ public class car : MonoBehaviour
         if (!rb) rb = gameObject.AddComponent<Rigidbody>();
         foreach (var wheel in wheels)
         {
-            WheelProperties w = wheel;
-
-            // Convert localPosition consistently
-            Vector3 parentRelativePosition = transform.InverseTransformPoint(transform.TransformPoint(w.localPosition));
-            w.localPosition = parentRelativePosition;
-
-            // Instantiate the visual wheel
+            WheelProperties w = wheel;// Instantiate the visual wheel
             w.wheelObject = Instantiate(wheelPrefab, transform);
             w.wheelObject.transform.localPosition = w.localPosition;
             w.wheelObject.transform.eulerAngles = transform.eulerAngles;
             w.wheelObject.transform.localScale = 2f * new Vector3(wheel.size, wheel.size, wheel.size);
-
-            // Calculate wheel circumference for rotation logic
-            w.wheelCircumference = 2f * Mathf.PI * wheel.size;
+            w.wheelCircumference = 2f * Mathf.PI * wheel.size; // Calculate wheel circumference for rotation logic
         }
     }
 
