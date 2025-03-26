@@ -28,8 +28,9 @@ public class WheelProperties
 
 public class car : MonoBehaviour
 {
-    float coefStaticFriction = 0.85f;
-    float coefKineticFriction = 0.45f;
+    float smoothTurn = 0.1f;
+    float coefStaticFriction = 1.85f;
+    float coefKineticFriction = 0.85f;
 
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
@@ -49,19 +50,11 @@ public class car : MonoBehaviour
 
     void Start()
     {
-        // Grab or add a Rigidbody
         rb = GetComponent<Rigidbody>();
         if (!rb) rb = gameObject.AddComponent<Rigidbody>();
-
-        // Slight tweak to inertia if desired
-        rb.inertiaTensor = 1.0f * rb.inertiaTensor;
-
-        // Create each wheel
-        if (wheels != null)
-        {
-            for (int i = 0; i < wheels.Length; i++)
+        foreach (var wheel in wheels)
             {
-                WheelProperties w = wheels[i];
+                WheelProperties w = wheel;
 
                 // Convert localPosition consistently
                 Vector3 parentRelativePosition = transform.InverseTransformPoint(transform.TransformPoint(w.localPosition));
@@ -71,18 +64,16 @@ public class car : MonoBehaviour
                 w.wheelObject = Instantiate(wheelPrefab, transform);
                 w.wheelObject.transform.localPosition = w.localPosition;
                 w.wheelObject.transform.eulerAngles   = transform.eulerAngles;
-                w.wheelObject.transform.localScale    = 2f * new Vector3(wheels[i].size, wheels[i].size, wheels[i].size);
+                w.wheelObject.transform.localScale    = 2f * new Vector3(wheel.size, wheel.size, wheel.size);
 
                 // Calculate wheel circumference for rotation logic
-                w.wheelCircumference = 2f * Mathf.PI * wheels[i].size;
+                w.wheelCircumference = 2f * Mathf.PI * wheel.size;
             }
-        }
     }
 
     void Update()
     {
-        // Gather inputs
-        input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        input = new Vector2(Mathf.Lerp(input.x, Input.GetAxisRaw("Horizontal"), smoothTurn), Input.GetAxisRaw("Vertical"));
     }
 
     void FixedUpdate()
@@ -118,10 +109,15 @@ public class car : MonoBehaviour
                 longitudinalFriction
             ) * w.normalForce * coefStaticFriction * Time.fixedDeltaTime;
             float currentMaxFrictionForce = w.normalForce * coefStaticFriction;
-            Debug.Log(currentMaxFrictionForce + " " + totalLocalForce.magnitude);
+
             w.slidding = totalLocalForce.magnitude > currentMaxFrictionForce;
             totalLocalForce = Vector3.ClampMagnitude(totalLocalForce, currentMaxFrictionForce);
             totalLocalForce *= w.slidding ? (coefKineticFriction / coefStaticFriction) : 1;
+            if (w.slidding) {
+                wheelVisual.transform.localScale = new Vector3(1.9f, 1.9f, 1.9f);
+            } else {
+                wheelVisual.transform.localScale = new Vector3(w.size, w.size, w.size) * 2f;
+            }
 
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
@@ -152,7 +148,7 @@ public class car : MonoBehaviour
                 wheelObj.position = w.wheelWorldPosition - transform.up * w.size; // If not hitting anything, just position the wheel under the local anchor
             }
 
-            wheelVisual.Rotate(Vector3.right, w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, Space.Self);
+            wheelVisual.Rotate(Vector3.right, w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime / w.size, Space.Self);
         }
     }
 }
