@@ -41,10 +41,6 @@ public class car : MonoBehaviour
     public float suspensionForce = 90f;       // spring constant
     public float dampAmount = 2.5f;           // damping constant
     public float suspensionForceClamp = 200f; // cap on total suspension force
-
-    [Header("Car Mass")]
-    public float massInKg = 100f;
-
     // These are updated each frame
     [HideInInspector] public Vector2 input = Vector2.zero;  // horizontal=steering, vertical=gas/brake
     [HideInInspector] public bool Forwards = false;
@@ -111,65 +107,49 @@ public class car : MonoBehaviour
             float inertia = w.mass * w.size * w.size / 2f;
 
             Vector3 forwardInWheelSpace = wheelObj.InverseTransformDirection(rb.GetPointVelocity(w.wheelWorldPosition));
-            float lateralFriction = Mathf.Clamp(-wheelGripX * w.localVelocity.x * w.normalForce, -200, 200);
-            float longitudinalFriction = Mathf.Clamp(-wheelGripZ * (forwardInWheelSpace.z - w.angularVelocity * w.size) * w.normalForce, -2000, 2000) * Time.fixedDeltaTime;
+            float lateralFriction = -wheelGripX * w.localVelocity.x;
+            float longitudinalFriction = -wheelGripZ * (forwardInWheelSpace.z - w.angularVelocity);
 
-            w.angularVelocity += w.torque / inertia * Time.fixedDeltaTime - longitudinalFriction * w.size / inertia;
+            w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
 
             Vector3 totalLocalForce = new Vector3(
                 lateralFriction,
                 0f,
                 longitudinalFriction
-            );
-            Vector3.ClampMagnitude(totalLocalForce, w.maxFrictionForce);
-            float currentFrictionForce = w.normalForce * coefStaticFriction;
-            if (totalLocalForce.magnitude > currentFrictionForce)
-            {
-                w.slidding = true;
-            }
-            else
-            {
-                w.slidding = false;
-            }
-            totalLocalForce *= w.slidding ? coefKineticFriction : coefStaticFriction;
+            ) * w.normalForce * coefStaticFriction * Time.fixedDeltaTime;
+            float currentMaxFrictionForce = w.normalForce * coefStaticFriction;
+            Debug.Log(currentMaxFrictionForce + " " + totalLocalForce.magnitude);
+            w.slidding = totalLocalForce.magnitude > currentMaxFrictionForce;
+            totalLocalForce = Vector3.ClampMagnitude(totalLocalForce, currentMaxFrictionForce);
+            totalLocalForce *= w.slidding ? (coefKineticFriction / coefStaticFriction) : 1;
 
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
             Forwards = w.localVelocity.z > 0f;
 
             RaycastHit hit;
-            if (Physics.Raycast(w.wheelWorldPosition, -transform.up, out hit, w.size * 2f))
-            {
-                // how much the spring is compressed
-                float rayLen = w.size * 2f;
+            if (Physics.Raycast(w.wheelWorldPosition, -transform.up, out hit, w.size * 2f)) {
+                float rayLen = w.size * 2f; // how much the spring is compressed
                 float compression = rayLen - hit.distance; 
-                // damping is difference from last frame
-                float damping = (w.lastSuspensionLength - hit.distance) * dampAmount;
+                float damping = (w.lastSuspensionLength - hit.distance) * dampAmount; // damping is difference from last frame
                 w.normalForce = (compression + damping) * suspensionForce;
+                w.normalForce = Mathf.Clamp(w.normalForce, 0f, suspensionForceClamp); // clamp it
 
-                // clamp it
-                w.normalForce = Mathf.Clamp(w.normalForce, 0f, suspensionForceClamp);
-
-                // direction is the surface normal
-                Vector3 springDir = hit.normal * w.normalForce;
+                
+                Vector3 springDir = hit.normal * w.normalForce; // direction is the surface normal
                 w.suspensionForceDirection = springDir;
 
                 Vector3 totalForce = springDir + totalWorldForce;
 
-                // Apply total forces at contact
-                rb.AddForceAtPosition(totalForce, hit.point);
+                rb.AddForceAtPosition(totalForce, hit.point); // Apply total forces at contact
 
-                // Move wheel visuals to the contact point + offset
-                wheelObj.position = hit.point + transform.up * w.size;
-
-                // store for damping next frame
-                w.lastSuspensionLength = hit.distance;
+                w.lastSuspensionLength = hit.distance; // store for damping next frame
                 w.maxFrictionForce = coefStaticFriction * w.normalForce;
+
+                wheelObj.position = hit.point + transform.up * w.size; // Move wheel visuals to the contact point + offset
             }
-            else
-            {
-                // If not hitting anything, just position the wheel under the local anchor
-                wheelObj.position = w.wheelWorldPosition - transform.up * w.size;
+            else {
+                wheelObj.position = w.wheelWorldPosition - transform.up * w.size; // If not hitting anything, just position the wheel under the local anchor
             }
 
             wheelVisual.Rotate(Vector3.right, w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, Space.Self);
