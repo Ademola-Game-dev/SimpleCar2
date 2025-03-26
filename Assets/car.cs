@@ -29,7 +29,7 @@ public class WheelProperties
 public class car : MonoBehaviour
 {
     float coefStaticFriction = 0.85f;
-    float coefKineticFriction = 0.15f;
+    float coefKineticFriction = 0.45f;
 
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
@@ -111,8 +111,8 @@ public class car : MonoBehaviour
             float inertia = w.mass * w.size * w.size / 2f;
 
             Vector3 forwardInWheelSpace = wheelObj.InverseTransformDirection(rb.GetPointVelocity(w.wheelWorldPosition));
-            float lateralFriction = Mathf.Clamp(-wheelGripX * w.localVelocity.x, -200, 200);
-            float longitudinalFriction = Mathf.Clamp(-wheelGripZ * (forwardInWheelSpace.z - w.angularVelocity * w.size), -200, 200) * Time.fixedDeltaTime;
+            float lateralFriction = Mathf.Clamp(-wheelGripX * w.localVelocity.x * w.normalForce, -200, 200);
+            float longitudinalFriction = Mathf.Clamp(-wheelGripZ * (forwardInWheelSpace.z - w.angularVelocity * w.size) * w.normalForce, -2000, 2000) * Time.fixedDeltaTime;
 
             w.angularVelocity += w.torque / inertia * Time.fixedDeltaTime - longitudinalFriction * w.size / inertia;
 
@@ -132,7 +132,6 @@ public class car : MonoBehaviour
                 w.slidding = false;
             }
             totalLocalForce *= w.slidding ? coefKineticFriction : coefStaticFriction;
-            //totalLocalForce /= massInKg;
 
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
