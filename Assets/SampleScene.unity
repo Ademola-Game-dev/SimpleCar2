@@ -194,14 +194,12 @@ MonoBehaviour:
     engineTorque: 0
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -214,14 +212,12 @@ MonoBehaviour:
     engineTorque: 0
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -234,14 +230,12 @@ MonoBehaviour:
     engineTorque: 40
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -254,14 +248,12 @@ MonoBehaviour:
     engineTorque: 40
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -6143,14 +6135,12 @@ MonoBehaviour:
     engineTorque: 0
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -6163,14 +6153,12 @@ MonoBehaviour:
     engineTorque: 0
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -6180,17 +6168,15 @@ MonoBehaviour:
     lastSuspensionLength: 0
     mass: 1.6
     size: 0.49
-    engineTorque: 30
+    engineTorque: 17
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
@@ -6200,21 +6186,19 @@ MonoBehaviour:
     lastSuspensionLength: 0
     mass: 1.6
     size: 0.49
-    engineTorque: 30
+    engineTorque: 17
     brakeStrength: 4
     slidding: 0
-    localSlipDirection: {x: 0, y: 0, z: 0}
     worldSlipDirection: {x: 0, y: 0, z: 0}
     suspensionForceDirection: {x: 0, y: 0, z: 0}
     wheelWorldPosition: {x: 0, y: 0, z: 0}
     wheelCircumference: 0
     torque: 0
     wheelObject: {fileID: 0}
-    hitPointForce: 0
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
-  wheelGripX: 7
+  wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 90
   dampAmount: 2.5

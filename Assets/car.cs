@@ -16,14 +16,12 @@ public class WheelProperties
     public float engineTorque = 40f; // Engine power in Nm to wheel
     public float brakeStrength = 0.5f; // Brake torque
     public bool slidding = false;
-    [HideInInspector] public Vector3 localSlipDirection;
     [HideInInspector] public Vector3 worldSlipDirection;
     [HideInInspector] public Vector3 suspensionForceDirection;
     [HideInInspector] public Vector3 wheelWorldPosition;
     [HideInInspector] public float wheelCircumference;
     [HideInInspector] public float torque = 0.0f;
     [HideInInspector] public GameObject wheelObject;
-    [HideInInspector] public float hitPointForce;
     [HideInInspector] public Vector3 localVelocity;
     [HideInInspector] public float normalForce;
     [HideInInspector] public float angularVelocity; // rad/sec
@@ -91,11 +89,8 @@ public class Car : MonoBehaviour
             Transform wheelObj = w.wheelObject.transform;
             Transform wheelVisual = wheelObj.GetChild(0);
 
-            wheelObj.localRotation = Quaternion.Lerp(
-                wheelObj.localRotation,
-                Quaternion.Euler(0, w.turnAngle * input.x, 0),
-                Time.fixedDeltaTime * 100f
-            );
+            wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * input.x, 0);
+
 
             w.wheelWorldPosition = transform.TransformPoint(w.localPosition);
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
@@ -106,7 +101,7 @@ public class Car : MonoBehaviour
             float inertia = w.mass * w.size * w.size / 2f;
 
             float lateralFriction = -wheelGripX * w.localVelocity.x;
-            float longitudinalFriction = -wheelGripZ * (w.localVelocity.z - w.angularVelocity);
+            float longitudinalFriction = -wheelGripZ * (w.localVelocity.z - w.angularVelocity * w.size);
 
             w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
             w.angularVelocity *= 1 - braking * w.brakeStrength * Time.fixedDeltaTime;
@@ -192,7 +187,7 @@ public class Car : MonoBehaviour
                 }
             }
 
-            wheelVisual.Rotate(Vector3.right, w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime / w.size, Space.Self);
+            wheelVisual.Rotate(Vector3.right, w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, Space.Self);
         }
     }
 }
