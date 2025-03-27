@@ -14,6 +14,7 @@ public class WheelProperties
     public float mass = 16f;
     public float size = 0.5f;
     public float engineTorque = 40f; // Engine power in Nm to wheel
+    public float brakeStrength = 0.5f; // Brake torque
     public bool slidding = false;
     [HideInInspector] public Vector3 localSlipDirection;
     [HideInInspector] public Vector3 worldSlipDirection;
@@ -32,8 +33,8 @@ public class Car : MonoBehaviour
 {
     public GameObject skidMarkPrefab; // Assign a prefab with a TrailRenderer in the inspector
 
-    float smoothTurn = 0.1f;
-    float coefStaticFriction = 1.85f;
+    float smoothTurn = 0.03f;
+    float coefStaticFriction = 1.95f;
     float coefKineticFriction = 0.85f;
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
@@ -44,6 +45,7 @@ public class Car : MonoBehaviour
     public float suspensionForceClamp = 200f;// cap on total suspension force
     private Vector2 input = Vector2.zero;// horizontal=steering, vertical=gas/brake
     private Rigidbody rb;
+    public int braking = 0;
 
     void Start()
     {
@@ -79,6 +81,7 @@ public class Car : MonoBehaviour
     void Update()
     {
         input = new Vector2(Mathf.Lerp(input.x, Input.GetAxisRaw("Horizontal"), smoothTurn), Input.GetAxisRaw("Vertical"));
+        braking = Input.GetKey(KeyCode.Space) ? 1 : 0;
     }
 
     void FixedUpdate()
@@ -98,15 +101,15 @@ public class Car : MonoBehaviour
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
             w.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
 
-            w.torque = input.y * w.engineTorque;
+            w.torque = w.engineTorque * input.y;
 
             float inertia = w.mass * w.size * w.size / 2f;
 
-            Vector3 forwardInWheelSpace = wheelObj.InverseTransformDirection(rb.GetPointVelocity(w.wheelWorldPosition));
             float lateralFriction = -wheelGripX * w.localVelocity.x;
-            float longitudinalFriction = -wheelGripZ * (forwardInWheelSpace.z - w.angularVelocity);
+            float longitudinalFriction = -wheelGripZ * (w.localVelocity.z - w.angularVelocity);
 
             w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
+            w.angularVelocity *= 1 - braking * w.brakeStrength * Time.fixedDeltaTime;
 
             Vector3 totalLocalForce = new Vector3(
                 lateralFriction,
@@ -159,6 +162,10 @@ public class Car : MonoBehaviour
                         // Continue emitting and update its position to the contact point.
                         w.skidTrail.emitting = true;
                         w.skidTrail.transform.position = hit.point;
+                        // Align the skid trail so its up vector is the road normal.
+                        // This projects the wheel's forward direction onto the road plane to preserve skid direction.
+                        Vector3 projectedForward = Vector3.ProjectOnPlane(wheelObj.transform.forward, hit.normal).normalized;
+                        w.skidTrail.transform.rotation = Quaternion.LookRotation(projectedForward, hit.normal);
                     }
                 }
                 else if (w.skidTrail != null && w.skidTrail.emitting)
