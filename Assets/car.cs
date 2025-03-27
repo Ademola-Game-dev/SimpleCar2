@@ -11,7 +11,7 @@ public class WheelProperties
     public float lastSuspensionLength = 0.0f;
     public float mass = 16f;
     public float size = 0.5f;
-    public float engineTorque = 40f; // Engine power in Nm
+    public float engineTorque = 40f; // Engine power in Nm to wheel
     public bool slidding = false;
     [HideInInspector] public Vector3 localSlipDirection;
     [HideInInspector] public Vector3 worldSlipDirection;
