@@ -5,6 +5,8 @@ using System.Collections.Generic;
 [Serializable]
 public class WheelProperties
 {
+    [HideInInspector] public TrailRenderer skidTrail;
+
     public Vector3 localPosition;
     public float turnAngle = 30f;
 
@@ -28,6 +30,8 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public GameObject skidMarkPrefab; // Assign a prefab with a TrailRenderer in the inspector
+
     float smoothTurn = 0.1f;
     float coefStaticFriction = 1.85f;
     float coefKineticFriction = 0.85f;
@@ -53,7 +57,23 @@ public class Car : MonoBehaviour
             w.wheelObject.transform.eulerAngles = transform.eulerAngles;
             w.wheelObject.transform.localScale = 2f * new Vector3(wheel.size, wheel.size, wheel.size);
             w.wheelCircumference = 2f * Mathf.PI * wheel.size; // Calculate wheel circumference for rotation logic
+
+            // Instantiate and setup the skid trail (if a prefab is assigned)
+            if (skidMarkPrefab != null)
+            {
+                GameObject skidTrailObj = Instantiate(skidMarkPrefab, transform);
+                // Parent it to the wheel so its position can be updated relative to it
+                skidTrailObj.transform.SetParent(w.wheelObject.transform);
+                // Optionally, reset local position if needed
+                skidTrailObj.transform.localPosition = Vector3.zero;
+                w.skidTrail = skidTrailObj.GetComponent<TrailRenderer>();
+                if (w.skidTrail != null)
+                {
+                    w.skidTrail.emitting = false; // start with emission off
+                }
+            }
         }
+
     }
 
     void Update()
@@ -98,8 +118,6 @@ public class Car : MonoBehaviour
             w.slidding = totalLocalForce.magnitude > currentMaxFrictionForce;
             totalLocalForce = Vector3.ClampMagnitude(totalLocalForce, currentMaxFrictionForce);
             totalLocalForce *= w.slidding ? (coefKineticFriction / coefStaticFriction) : 1;
-            if (w.slidding) wheelVisual.transform.localScale = new Vector3(1.9f, 1.9f, 1.9f);
-            else wheelVisual.transform.localScale = new Vector3(w.size, w.size, w.size) * 2f;
 
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
@@ -120,8 +138,52 @@ public class Car : MonoBehaviour
 
                 w.lastSuspensionLength = hit.distance; // store for damping next frame
                 wheelObj.position = hit.point + transform.up * w.size; // Move wheel visuals to the contact point + offset
+
+                // ---- Skid marks ----
+                if (w.slidding)
+                {
+                    // If no skid trail exists or if it was detached previously, instantiate a new one.
+                    if (w.skidTrail == null && skidMarkPrefab != null)
+                    {
+                        GameObject skidTrailObj = Instantiate(skidMarkPrefab, transform);
+                        skidTrailObj.transform.SetParent(w.wheelObject.transform);
+                        skidTrailObj.transform.localPosition = Vector3.zero;
+                        w.skidTrail = skidTrailObj.GetComponent<TrailRenderer>();
+                        if (w.skidTrail != null)
+                        {
+                            w.skidTrail.emitting = true;
+                        }
+                    }
+                    else if (w.skidTrail != null)
+                    {
+                        // Continue emitting and update its position to the contact point.
+                        w.skidTrail.emitting = true;
+                        w.skidTrail.transform.position = hit.point;
+                    }
+                }
+                else if (w.skidTrail != null && w.skidTrail.emitting)
+                {
+                    // Stop emitting and detach the skid trail so it remains in the scene to fade out.
+                    w.skidTrail.emitting = false;
+                    w.skidTrail.transform.parent = null;
+                    // Optionally, destroy the skid trail after its lifetime has elapsed.
+                    Destroy(w.skidTrail.gameObject, w.skidTrail.time);
+                    w.skidTrail = null;
+                }
             }
-            else wheelObj.position = w.wheelWorldPosition - transform.up * w.size; // If not hitting anything, just position the wheel under the local anchor
+            else
+            {
+                wheelObj.position = w.wheelWorldPosition - transform.up * w.size; // If not hitting anything, just position the wheel under the local anchor
+
+                // If wheel is off ground, detach skid trail if needed.
+                if (w.skidTrail != null && w.skidTrail.emitting)
+                {
+                    w.skidTrail.emitting = false;
+                    w.skidTrail.transform.parent = null;
+                    Destroy(w.skidTrail.gameObject, w.skidTrail.time);
+                    w.skidTrail = null;
+                }
+            }
 
             wheelVisual.Rotate(Vector3.right, w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime / w.size, Space.Self);
         }
