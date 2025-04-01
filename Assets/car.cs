@@ -29,6 +29,7 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public bool steerAssistance = true;
     public GameObject skidMarkPrefab; // Assign a prefab with a TrailRenderer in the inspector
 
     float smoothTurn = 0.03f;
@@ -89,8 +90,13 @@ public class Car : MonoBehaviour
             Transform wheelObj = w.wheelObject.transform;
             Transform wheelVisual = wheelObj.GetChild(0);
 
-            wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * input.x, 0);
+            if (steerAssistance && w.slidding)
+            {
+                float angle = Vector3.Dot(w.localVelocity, wheelObj.forward) / w.localVelocity.magnitude;
+                input.x = Mathf.Clamp(angle / w.turnAngle, -1f, 1f);
+            }
 
+            wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * input.x, 0);
 
             w.wheelWorldPosition = transform.TransformPoint(w.localPosition);
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
