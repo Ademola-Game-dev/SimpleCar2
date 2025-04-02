@@ -85,6 +85,7 @@ public class Car : MonoBehaviour
 
     void FixedUpdate()
     {
+        rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * 0.2f, transform.position); // downforce
         foreach (var w in wheels)
         {
             Transform wheelObj = w.wheelObject.transform;
@@ -93,7 +94,7 @@ public class Car : MonoBehaviour
             if (steerAssistance && w.slidding)
             {
                 float angle = Vector3.Dot(w.localVelocity, wheelObj.forward) / w.localVelocity.magnitude;
-                input.x = Mathf.Clamp(angle / w.turnAngle, -1f, 1f);
+                input.x = Mathf.Lerp(input.x, Mathf.Clamp(angle / w.turnAngle, -1f, 1f), smoothTurn);
             }
 
             wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * input.x, 0);
