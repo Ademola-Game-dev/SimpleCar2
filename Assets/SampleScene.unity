@@ -163,13 +163,14 @@ GameObject:
   - component: {fileID: 19599196}
   - component: {fileID: 19599195}
   - component: {fileID: 19599200}
+  - component: {fileID: 19599201}
   m_Layer: 0
   m_Name: Car
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &19599195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,8 +183,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steerAssistance: 1
   skidMarkPrefab: {fileID: 1624556968706577038, guid: d652325c42b2a40c4a38831973e7b5be, type: 3}
+  smoothTurn: 0.03
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
@@ -204,6 +205,9 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   - skidTrail: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: 1.7}
     turnAngle: 23
@@ -222,6 +226,9 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   - skidTrail: {fileID: 0}
     localPosition: {x: 1.14, y: 0.55, z: -1.7}
     turnAngle: 0
@@ -240,6 +247,9 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   - skidTrail: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: -1.7}
     turnAngle: 0
@@ -258,12 +268,14 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 90
   dampAmount: 2.5
   suspensionForceClamp: 200
-  braking: 0
 --- !u!65 &19599196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -380,6 +392,18 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &19599201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 19599194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &21618116 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3958533246543444396, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -5846,8 +5870,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 551396fa0535c4538bee6bb7e7a274bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  justFollow: 0
-  target: {fileID: 19599199}
+  justFollow: 1
+  target: {fileID: 1197988572}
   zoomSpeed: 10
   minFOV: 20
   maxFOV: 90
@@ -6523,13 +6547,14 @@ GameObject:
   - component: {fileID: 1197988569}
   - component: {fileID: 1197988568}
   - component: {fileID: 1197988567}
+  - component: {fileID: 1197988573}
   m_Layer: 0
   m_Name: Car (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!54 &1197988567
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -6569,8 +6594,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steerAssistance: 0
   skidMarkPrefab: {fileID: 1624556968706577038, guid: d652325c42b2a40c4a38831973e7b5be, type: 3}
+  smoothTurn: 0.03
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
@@ -6579,7 +6604,7 @@ MonoBehaviour:
     lastSuspensionLength: 0
     mass: 1.6
     size: 0.45
-    engineTorque: 0
+    engineTorque: 57
     brakeStrength: 4
     slidding: 0
     worldSlipDirection: {x: 0, y: 0, z: 0}
@@ -6591,13 +6616,16 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   - skidTrail: {fileID: 0}
     localPosition: {x: -1, y: 0.55, z: 1.7}
     turnAngle: 34
     lastSuspensionLength: 0
     mass: 1.6
     size: 0.45
-    engineTorque: 0
+    engineTorque: 57
     brakeStrength: 4
     slidding: 0
     worldSlipDirection: {x: 0, y: 0, z: 0}
@@ -6609,6 +6637,9 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   - skidTrail: {fileID: 0}
     localPosition: {x: 1, y: 0.59, z: -1.7}
     turnAngle: 0
@@ -6627,6 +6658,9 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   - skidTrail: {fileID: 0}
     localPosition: {x: -1, y: 0.59, z: -1.7}
     turnAngle: 0
@@ -6645,12 +6679,14 @@ MonoBehaviour:
     localVelocity: {x: 0, y: 0, z: 0}
     normalForce: 0
     angularVelocity: 0
+    slip: 0
+    input: {x: 0, y: 0}
+    braking: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 90
   dampAmount: 2.5
   suspensionForceClamp: 200
-  braking: 0
 --- !u!65 &1197988569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -6670,8 +6706,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.18, y: 0.7652973, z: 5.61}
-  m_Center: {x: 0, y: 0.23264867, z: 0}
+  m_Size: {x: 2.18, y: 0.7721094, z: 5.61}
+  m_Center: {x: 0, y: 0.23605472, z: 0}
 --- !u!23 &1197988570
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -6740,6 +6776,18 @@ Transform:
   - {fileID: 410100383}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1197988573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1197988566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1204884809 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7677471772335586173, guid: f601c7427c1e04187905e51349da26af, type: 3}

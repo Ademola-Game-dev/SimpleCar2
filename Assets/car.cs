@@ -25,15 +25,17 @@ public class WheelProperties
     [HideInInspector] public Vector3 localVelocity;
     [HideInInspector] public float normalForce;
     [HideInInspector] public float angularVelocity; // rad/sec
+    [HideInInspector] public float slip;
+    [HideInInspector] public Vector2 input = Vector2.zero;// horizontal=steering, vertical=gas/brake
+    [HideInInspector] public float braking = 0;
 }
 
 public class Car : MonoBehaviour
 {
-    public bool steerAssistance = true;
     public GameObject skidMarkPrefab; // Assign a prefab with a TrailRenderer in the inspector
 
-    float smoothTurn = 0.03f;
-    float coefStaticFriction = 1.95f;
+    public float smoothTurn = 0.03f;
+    float coefStaticFriction = 2.95f;
     float coefKineticFriction = 0.85f;
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
@@ -42,9 +44,7 @@ public class Car : MonoBehaviour
     public float suspensionForce = 90f;// spring constant
     public float dampAmount = 2.5f;// damping constant
     public float suspensionForceClamp = 200f;// cap on total suspension force
-    private Vector2 input = Vector2.zero;// horizontal=steering, vertical=gas/brake
     private Rigidbody rb;
-    public int braking = 0;
 
     void Start()
     {
@@ -74,13 +74,20 @@ public class Car : MonoBehaviour
                 }
             }
         }
-
+        rb.centerOfMass = rb.centerOfMass + new Vector3(0, -0.5f, 0); // Adjust center of mass for better handling
     }
 
     void Update()
     {
-        input = new Vector2(Mathf.Lerp(input.x, Input.GetAxisRaw("Horizontal"), smoothTurn), Input.GetAxisRaw("Vertical"));
-        braking = Input.GetKey(KeyCode.Space) ? 1 : 0;
+        Debug.Log(rb.velocity.magnitude * 3.6f); // Display speed in km/h
+        if (GetComponent<Assist>() == null)
+        {
+            foreach (var w in wheels)
+            {
+                w.input = new Vector2(Mathf.Lerp(w.input.x, Input.GetAxisRaw("Horizontal"), smoothTurn), Input.GetAxisRaw("Vertical"));
+                w.braking = Input.GetKey(KeyCode.Space) ? 1 : 0;
+            }
+        }
     }
 
     void FixedUpdate()
@@ -91,19 +98,13 @@ public class Car : MonoBehaviour
             Transform wheelObj = w.wheelObject.transform;
             Transform wheelVisual = wheelObj.GetChild(0);
 
-            if (steerAssistance && w.slidding)
-            {
-                float angle = Vector3.Dot(w.localVelocity, wheelObj.forward) / w.localVelocity.magnitude;
-                input.x = Mathf.Lerp(input.x, Mathf.Clamp(angle / w.turnAngle, -1f, 1f), smoothTurn);
-            }
-
-            wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * input.x, 0);
+            wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * w.input.x, 0);
 
             w.wheelWorldPosition = transform.TransformPoint(w.localPosition);
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
             w.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
 
-            w.torque = w.engineTorque * input.y;
+            w.torque = w.engineTorque * w.input.y;
 
             float inertia = w.mass * w.size * w.size / 2f;
 
@@ -111,7 +112,7 @@ public class Car : MonoBehaviour
             float longitudinalFriction = -wheelGripZ * (w.localVelocity.z - w.angularVelocity * w.size);
 
             w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
-            w.angularVelocity *= 1 - braking * w.brakeStrength * Time.fixedDeltaTime;
+            w.angularVelocity *= 1 - w.braking * w.brakeStrength * Time.fixedDeltaTime;
 
             Vector3 totalLocalForce = new Vector3(
                 lateralFriction,
@@ -121,6 +122,7 @@ public class Car : MonoBehaviour
             float currentMaxFrictionForce = w.normalForce * coefStaticFriction;
 
             w.slidding = totalLocalForce.magnitude > currentMaxFrictionForce;
+            w.slip = totalLocalForce.magnitude / currentMaxFrictionForce;
             totalLocalForce = Vector3.ClampMagnitude(totalLocalForce, currentMaxFrictionForce);
             totalLocalForce *= w.slidding ? (coefKineticFriction / coefStaticFriction) : 1;
 
