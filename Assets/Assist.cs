@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class Assist : MonoBehaviour
 {
+    public bool steeringAssist = true;
+    public bool throttleAssist = true;
+    public bool brakeAssist = true;
     private Car car;
     float horizontalInput = 0;
     float verticalInput = 0;
@@ -29,28 +32,17 @@ public class Assist : MonoBehaviour
 
         for (int i = 0; i < car.wheels.Length; i++)
         {
-            // Apply smooth steering to each wheel
-            if (maxSlip < 0.98f)car.wheels[i].input = new Vector2(Mathf.Lerp(car.wheels[i].input.x, horizontalInput, car.smoothTurn), verticalInput);
-            
-            // Apply braking to each wheel
-            car.wheels[i].braking = Mathf.Lerp(car.wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
-
-            // Handle wheel slip behaviors
-            if (maxSlip > 0.96f)
+            if (throttleAssist && maxSlip > 0.9f)
             {
-                car.wheels[i].braking = Mathf.Lerp(car.wheels[i].braking, 0, 0.8f);
-            }
-
-            if (maxSlip > 0.85f)
-            {
-                car.wheels[i].input = new Vector2(car.wheels[i].input.x, Mathf.Lerp(car.wheels[i].input.y, 0, 0.9f));
+                // Reduce throttle input if slip is too high
+                verticalInput = Mathf.Lerp(verticalInput, 0, maxSlip);
             }
             
-            if (maxSlip > 0.94f)
+            if (steeringAssist && maxSlip > 0.5f)
             {
-                car.wheels[i].input = new Vector2(Mathf.Lerp(car.wheels[i].input.x, 0, 0.2f), car.wheels[i].input.y);
+                // Reduce steering input if slip is too high
+                horizontalInput = Mathf.Lerp(horizontalInput, 0, 0.1f);
             }
-            
             // Apply counter-steering when slipping severely
             if (maxSlip > 1.0f && car.wheels[i].localVelocity.magnitude > 0.1f)
             {
@@ -63,6 +55,9 @@ public class Assist : MonoBehaviour
                     car.wheels[i].input.y
                 );
             }
+
+            car.wheels[i].braking = Mathf.Lerp(car.wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
+            car.wheels[i].input = new Vector2(horizontalInput, verticalInput);
         }
     }
 }
