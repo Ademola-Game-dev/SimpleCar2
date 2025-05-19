@@ -161,6 +161,7 @@ MonoBehaviour:
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1.14, y: 0.55, z: 1.7}
     turnAngle: 40
     suspensionLength: 0.4
@@ -182,8 +183,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: 1.7}
     turnAngle: 40
     suspensionLength: 0.4
@@ -205,8 +206,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1.14, y: 0.55, z: -1.7}
     turnAngle: -20
     suspensionLength: 0.4
@@ -228,8 +229,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: -1.7}
     turnAngle: -20
     suspensionLength: 0.4
@@ -251,7 +252,6 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 45
@@ -1792,6 +1792,7 @@ MonoBehaviour:
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1, y: 0.55, z: 1.7}
     turnAngle: 34
     suspensionLength: 0.04
@@ -1813,8 +1814,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1, y: 0.55, z: 1.7}
     turnAngle: 34
     suspensionLength: 0.04
@@ -1836,8 +1837,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1, y: 0.59, z: -1.7}
     turnAngle: 0
     suspensionLength: 0.04
@@ -1859,8 +1860,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1, y: 0.59, z: -1.7}
     turnAngle: 0
     suspensionLength: 0.04
@@ -1882,7 +1883,6 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 90
@@ -2682,6 +2682,7 @@ MonoBehaviour:
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 0.8, y: 0.55, z: 1.7}
     turnAngle: 34
     suspensionLength: 0.3
@@ -2703,8 +2704,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -0.8, y: 0.55, z: 1.7}
     turnAngle: 34
     suspensionLength: 0.3
@@ -2726,8 +2727,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 0.8, y: 0.59, z: -1.7}
     turnAngle: 0
     suspensionLength: 0.3
@@ -2749,8 +2750,8 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -0.8, y: 0.59, z: -1.7}
     turnAngle: 0
     suspensionLength: 0.3
@@ -2772,7 +2773,6 @@ MonoBehaviour:
     slip: 0
     input: {x: 0, y: 0}
     braking: 0
-    lastSkidTime: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 40
