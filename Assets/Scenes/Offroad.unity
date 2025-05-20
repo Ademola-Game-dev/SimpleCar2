@@ -188,6 +188,7 @@ MonoBehaviour:
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1.14, y: 0.55, z: 1.7}
     turnAngle: 40
     suspensionLength: 0.4
@@ -210,6 +211,7 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: 1.7}
     turnAngle: 40
     suspensionLength: 0.4
@@ -232,6 +234,7 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1.14, y: 0.55, z: -1.7}
     turnAngle: -20
     suspensionLength: 0.4
@@ -254,6 +257,7 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: -1.7}
     turnAngle: -20
     suspensionLength: 0.4
@@ -280,6 +284,11 @@ MonoBehaviour:
   suspensionForce: 45
   dampAmount: 4.5
   suspensionForceClamp: 200
+  forwards: 1
+  steeringAssist: 1
+  throttleAssist: 1
+  brakeAssist: 1
+  userInput: {x: 0, y: 0}
 --- !u!65 &19599196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -408,9 +417,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringAssist: 1
-  throttleAssist: 1
-  brakeAssist: 1
 --- !u!1 &21618116 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -3958533246543444396, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -2019,64 +2025,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a7d8acda896b24eada1e2f2f517bdae7, type: 3}
   m_PrefabInstance: {fileID: 834241954}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &375063293
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -3.6861482
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.53900945
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 3.462554
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: -8679921383154817045, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 919132149155446097, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-      propertyPath: m_Name
-      value: Cyber Truck
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 8164078558771037576, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
 --- !u!1 &378762284 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7798493781421988689, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -6102,7 +6050,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 551396fa0535c4538bee6bb7e7a274bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  justFollow: 1
+  justFollow: 0
   target: {fileID: 2038849770}
   zoomSpeed: 10
   minFOV: 20
@@ -7133,6 +7081,7 @@ MonoBehaviour:
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1, y: 0.55, z: 1.7}
     turnAngle: 34
     suspensionLength: 0.04
@@ -7155,6 +7104,7 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1, y: 0.55, z: 1.7}
     turnAngle: 34
     suspensionLength: 0.04
@@ -7177,6 +7127,7 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1, y: 0.59, z: -1.7}
     turnAngle: 0
     suspensionLength: 0.04
@@ -7199,6 +7150,7 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1, y: 0.59, z: -1.7}
     turnAngle: 0
     suspensionLength: 0.04
@@ -7225,6 +7177,11 @@ MonoBehaviour:
   suspensionForce: 90
   dampAmount: 2.5
   suspensionForceClamp: 200
+  forwards: 1
+  steeringAssist: 1
+  throttleAssist: 1
+  brakeAssist: 1
+  userInput: {x: 0, y: 0}
 --- !u!65 &1197988569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7326,9 +7283,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringAssist: 1
-  throttleAssist: 1
-  brakeAssist: 1
 --- !u!1 &1204884809 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7677471772335586173, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -8624,6 +8578,97 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 728420896931729382, guid: f601c7427c1e04187905e51349da26af, type: 3}
+--- !u!1001 &1481374848
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2038849770}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.6241543
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1.6241543
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1.6241543
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.984
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.713
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -1.303
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -3756473180518285571, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -1025663018108745142, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_Name
+      value: cybertruck
+      objectReference: {fileID: 0}
+    - target: {fileID: 2891746525080496957, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5233112405309087440, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 65702495048144492, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+    - {fileID: -8700617353114198275, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+    - {fileID: 3942844865621104101, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+    - {fileID: 6688365970232631406, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+    - {fileID: -4714817154256824709, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+    - {fileID: 8821623529969584324, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
 --- !u!1 &1489297124 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7641896341249474589, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -10496,6 +10541,11 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 3884196954625308573, guid: f601c7427c1e04187905e51349da26af, type: 3}
+--- !u!4 &1873377770 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a844f06ec95f447369aa905ee9d410a9, type: 3}
+  m_PrefabInstance: {fileID: 1481374848}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1899721014 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5321113636551170139, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -11233,12 +11283,13 @@ GameObject:
   - component: {fileID: 2038849770}
   - component: {fileID: 2038849769}
   - component: {fileID: 2038849768}
+  - component: {fileID: 2038849771}
   - component: {fileID: 2038849767}
   - component: {fileID: 2038849766}
   - component: {fileID: 2038849765}
   - component: {fileID: 2038849764}
   m_Layer: 0
-  m_Name: Car (2) Offroad
+  m_Name: cybertruck
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11256,9 +11307,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringAssist: 1
-  throttleAssist: 1
-  brakeAssist: 1
 --- !u!54 &2038849765
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -11303,13 +11351,14 @@ MonoBehaviour:
   wheelPrefab: {fileID: 8590144470467000258, guid: f7f450c530fca422dbbf30512a205cb8, type: 3}
   wheels:
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 0.8, y: 0.55, z: 1.7}
     turnAngle: 34
-    suspensionLength: 0.3
+    suspensionLength: 0.14
     lastSuspensionLength: 0
-    mass: 1.6
-    size: 0.41
-    engineTorque: 57
+    mass: 4.7
+    size: 0.44
+    engineTorque: 10
     brakeStrength: 4
     slidding: 0
     worldSlipDirection: {x: 0, y: 0, z: 0}
@@ -11325,13 +11374,14 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -0.8, y: 0.55, z: 1.7}
     turnAngle: 34
-    suspensionLength: 0.3
+    suspensionLength: 0.14
     lastSuspensionLength: 0
-    mass: 1.6
-    size: 0.41
-    engineTorque: 57
+    mass: 4.7
+    size: 0.44
+    engineTorque: 10
     brakeStrength: 4
     slidding: 0
     worldSlipDirection: {x: 0, y: 0, z: 0}
@@ -11347,13 +11397,14 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: 0.8, y: 0.59, z: -1.7}
     turnAngle: 0
-    suspensionLength: 0.3
+    suspensionLength: 0.14
     lastSuspensionLength: 0
-    mass: 1.6
-    size: 0.41
-    engineTorque: 57
+    mass: 4.7
+    size: 0.44
+    engineTorque: 10
     brakeStrength: 4
     slidding: 0
     worldSlipDirection: {x: 0, y: 0, z: 0}
@@ -11369,13 +11420,14 @@ MonoBehaviour:
     input: {x: 0, y: 0}
     braking: 0
   - skidTrail: {fileID: 0}
+    skidTrailGameObject: {fileID: 0}
     localPosition: {x: -0.8, y: 0.59, z: -1.7}
     turnAngle: 0
-    suspensionLength: 0.3
+    suspensionLength: 0.14
     lastSuspensionLength: 0
-    mass: 1.6
-    size: 0.41
-    engineTorque: 57
+    mass: 4.7
+    size: 0.44
+    engineTorque: 10
     brakeStrength: 4
     slidding: 0
     worldSlipDirection: {x: 0, y: 0, z: 0}
@@ -11395,6 +11447,11 @@ MonoBehaviour:
   suspensionForce: 40
   dampAmount: 2.5
   suspensionForceClamp: 200
+  forwards: 1
+  steeringAssist: 1
+  throttleAssist: 1
+  brakeAssist: 1
+  userInput: {x: 0, y: 0}
 --- !u!65 &2038849767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11414,8 +11471,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.18, y: 0.7721094, z: 5.112649}
-  m_Center: {x: 0, y: 0.23605472, z: 0.1809187}
+  m_Size: {x: 1.5908461, y: 0.8140744, z: 5.244585}
+  m_Center: {x: 0, y: 0.57252246, z: -0.10292292}
 --- !u!23 &2038849768
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -11482,9 +11539,30 @@ Transform:
   - {fileID: 1752329134}
   - {fileID: 366929003}
   - {fileID: 1716261303}
-  - {fileID: 429227874563176285}
+  - {fileID: 1873377770}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2038849771
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2038849763}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.6358073, y: 1.1201307, z: 3.4892955}
+  m_Center: {x: 0, y: 0.5698611, z: -0.44882655}
 --- !u!1 &2042934657 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -6161106524871866303, guid: f601c7427c1e04187905e51349da26af, type: 3}
@@ -11890,121 +11968,6 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -4640798704660112401, guid: f601c7427c1e04187905e51349da26af, type: 3}
---- !u!4 &429227874563176285
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1062634930489060839}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.296, z: -0.35}
-  m_LocalScale: {x: 0.97, y: 0.97, z: 0.97}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 974141227354392069}
-  m_Father: {fileID: 2038849770}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &974141227354392069
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8300968877120787774}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 429227874563176285}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1062634930489060839
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 429227874563176285}
-  m_Layer: 0
-  m_Name: Cyber Truck
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!23 &1474450821059222491
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8300968877120787774}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 9222941511559460108, guid: 48faf18462bc24de18dbe2e01f24ec14, type: 3}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!33 &2689765070470627151
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8300968877120787774}
-  m_Mesh: {fileID: -2432090755550338912, guid: 83caaff075a7d4cc98acbbfd3a228f27, type: 3}
---- !u!1 &8300968877120787774
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 974141227354392069}
-  - component: {fileID: 2689765070470627151}
-  - component: {fileID: 1474450821059222491}
-  m_Layer: 0
-  m_Name: default
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -12033,4 +11996,3 @@ SceneRoots:
   - {fileID: 1601091969}
   - {fileID: 1343430809}
   - {fileID: 1106785150}
-  - {fileID: 375063293}
