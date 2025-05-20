@@ -89,7 +89,7 @@ public class Car : MonoBehaviour
     void Update()
     {
         // Get player input for reference
-        userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal"), 0.2f);
+        userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal") / (1 + rb.velocity.magnitude / 28f), 0.2f);
         userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical"), 0.2f);
         bool isBraking = Input.GetKey(KeyCode.S) && forwards;
         if (isBraking) userInput.y = 0;
@@ -109,10 +109,10 @@ public class Car : MonoBehaviour
                 userInput.y = Mathf.Lerp(userInput.y, 0, maxSlip);
             }
             
-            if (steeringAssist && maxSlip > 0.6f)
+            if (steeringAssist && maxSlip > 0.7f)
             {
                 // Reduce steering input if slip is too high
-                userInput.x = Mathf.Lerp(userInput.x, 0, 0.1f);
+                userInput.x = Mathf.Lerp(userInput.x, 0, 0.05f);
             }
             // Apply counter-steering when slipping severely
             if (maxSlip > 1.0f && wheels[i].localVelocity.magnitude > 0.1f)
