@@ -54,7 +54,7 @@ public class Car : MonoBehaviour
     public bool throttleAssist = true;
     public bool brakeAssist = true;
     [HideInInspector] public Vector2 userInput = Vector2.zero;
-    float downforce = 0.16f;
+    public float downforce = 0.16f;
 
     void Start()
     {
@@ -142,7 +142,6 @@ public class Car : MonoBehaviour
     {
         // Debug.Log(rb.velocity.magnitude);
         rb.AddForce(-transform.up * rb.velocity.magnitude * downforce);
-        float totalNormalForce = 0;
         foreach (var w in wheels)
         {
             RaycastHit hit;
@@ -192,7 +191,6 @@ public class Car : MonoBehaviour
                 float damping = (w.lastSuspensionLength - hit.distance) * dampAmount;
                 w.normalForce = (compression + damping) * suspensionForce;
                 w.normalForce = Mathf.Clamp(w.normalForce, 0f, suspensionForceClamp);
-                totalNormalForce += w.normalForce;
 
                 Vector3 springDir = hit.normal * w.normalForce;
                 w.suspensionForceDirection = springDir;
@@ -266,6 +264,5 @@ public class Car : MonoBehaviour
                 Space.Self
             );
         }
-        Debug.Log(totalNormalForce);
     }
 }

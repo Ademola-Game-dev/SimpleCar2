@@ -289,6 +289,7 @@ MonoBehaviour:
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
+  downforce: 0.16
 --- !u!65 &19599196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7182,6 +7183,7 @@ MonoBehaviour:
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
+  downforce: 0.16
 --- !u!65 &1197988569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -11452,6 +11454,7 @@ MonoBehaviour:
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
+  downforce: 0.02
 --- !u!65 &2038849767
 BoxCollider:
   m_ObjectHideFlags: 0
