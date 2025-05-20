@@ -262,6 +262,7 @@ MonoBehaviour:
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
+  downforce: 0.16
 --- !u!65 &19599196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -390,12 +391,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringAssist: 1
-  throttleAssist: 1
-  brakeAssist: 1
-  car: {fileID: 0}
-  horizontalInput: 0
-  verticalInput: 0
 --- !u!1 &43013522
 GameObject:
   m_ObjectHideFlags: 0
@@ -1900,6 +1895,7 @@ MonoBehaviour:
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
+  downforce: 0.16
 --- !u!65 &1197988569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2264,10 +2260,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -5769486817856789212, guid: 02205a0b6b51d4fe88c2f42a76143749, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: cdb04873bf8bc421e83c900a831f00c8, type: 2}
     - target: {fileID: -5279729146574486167, guid: 02205a0b6b51d4fe88c2f42a76143749, type: 3}
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -4035749786436666216, guid: 02205a0b6b51d4fe88c2f42a76143749, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: cdb04873bf8bc421e83c900a831f00c8, type: 2}
     - target: {fileID: -1510929987306677855, guid: 02205a0b6b51d4fe88c2f42a76143749, type: 3}
       propertyPath: m_IsActive
       value: 0
@@ -2280,6 +2284,10 @@ PrefabInstance:
       propertyPath: m_Materials.Array.data[0]
       value: 
       objectReference: {fileID: 2100000, guid: 3471185944c984a238279c35083e9c0d, type: 2}
+    - target: {fileID: 2928634244028750196, guid: 02205a0b6b51d4fe88c2f42a76143749, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: cdb04873bf8bc421e83c900a831f00c8, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -2632,12 +2640,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d296bb97e40343678d39859c6a4b3b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  steeringAssist: 1
-  throttleAssist: 1
-  brakeAssist: 1
-  car: {fileID: 0}
-  horizontalInput: 0
-  verticalInput: 0
 --- !u!54 &2038849765
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2783,6 +2785,7 @@ MonoBehaviour:
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
+  downforce: 0.16
 --- !u!65 &2038849767
 BoxCollider:
   m_ObjectHideFlags: 0
