@@ -21,7 +21,11 @@ public class Assist : MonoBehaviour
         // Get player input for reference
         horizontalInput = Mathf.Lerp(horizontalInput, Input.GetAxisRaw("Horizontal"), 0.2f);
         verticalInput = Mathf.Lerp(verticalInput, Input.GetAxisRaw("Vertical"), 0.2f);
-        bool isBraking = Input.GetKey(KeyCode.Space);
+        bool isBraking = Input.GetKey(KeyCode.Space) || (Input.GetKey(KeyCode.S) && car.forwards);
+        if (isBraking)
+        {
+            verticalInput = 0;
+        }
 
         float maxSlip = 0;
         // Calculate the maximum slip of all wheels
@@ -54,6 +58,12 @@ public class Assist : MonoBehaviour
                     Mathf.Lerp(car.wheels[i].input.x, Mathf.Clamp(angle / car.wheels[i].turnAngle, -1f, 1f), 0.1f),
                     car.wheels[i].input.y
                 );
+            }
+
+            if (brakeAssist && maxSlip > 0.95f)
+            {
+                // Reduce braking input if slip is too high
+                isBraking = false;
             }
 
             car.wheels[i].braking = Mathf.Lerp(car.wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
