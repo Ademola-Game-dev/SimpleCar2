@@ -46,6 +46,8 @@ public class Car : MonoBehaviour
     public float dampAmount = 2.5f;
     public float suspensionForceClamp = 200f;
     private Rigidbody rb;
+    [HideInInspector] public bool forwards = true;
+
 
     void Start()
     {
@@ -94,6 +96,7 @@ public class Car : MonoBehaviour
 
     void FixedUpdate()
     {
+        Debug.Log(rb.velocity.magnitude);
         rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * 0.2f, transform.position);
 
         foreach (var w in wheels)
@@ -107,6 +110,7 @@ public class Car : MonoBehaviour
             w.wheelWorldPosition = transform.TransformPoint(w.localPosition);
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
             w.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
+            forwards = w.localVelocity.z > 0.1f;
             w.torque = w.engineTorque * w.input.y;
 
             float inertia = w.mass * w.size * w.size / 2f;
@@ -148,30 +152,49 @@ public class Car : MonoBehaviour
                 w.lastSuspensionLength = hit.distance;
                 wheelObj.position = hit.point + transform.up * w.size;
 
-                // before this block, skidTrail.emitting will be false
-                if (w.slidding && w.skidTrail != null)
+                if (w.slidding)
                 {
-                    // only clear and restart emission on the frame we begin skidding
-                    if (!w.skidTrail.emitting)
+                    // If no skid trail exists or if it was detached previously, instantiate a new one.
+                    if (w.skidTrail == null && skidMarkPrefab != null)
                     {
-                        w.skidTrail.Clear();
-                        w.skidTrail.emitting = true;
+                        GameObject skidTrailObj = Instantiate(skidMarkPrefab, transform);
+                        skidTrailObj.transform.SetParent(w.wheelObject.transform);
+                        skidTrailObj.transform.localPosition = Vector3.zero;
+                        w.skidTrail = skidTrailObj.GetComponent<TrailRenderer>();
+                        w.skidTrail.time = 3f; // Trail lasts for 10 seconds
+                        w.skidTrail.autodestruct = true;
+                        if (w.skidTrail != null)
+                        {
+                            w.skidTrail.emitting = true;
+                        }
                     }
+                    else if (w.skidTrail != null)
+                    {
+                        // Continue emitting and update its position to the contact point.
+                        w.skidTrail.emitting = true;
+                        w.skidTrail.transform.position = hit.point;
+                        // Align the skid trail so its up vector is the road normal.
+                        // This projects the wheel's forward direction onto the road plane to preserve skid direction.
+                        // Now update to real position/rotation
+                        w.skidTrail.transform.position = hit.point;
 
-                    // now move + orient the freshly-cleared trail
-                    w.skidTrail.transform.position = hit.point;
+                        Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
+                        if (skidDir.sqrMagnitude < 0.001f)
+                            skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
 
-                    Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
-                    if (skidDir.sqrMagnitude < 0.001f)
-                        skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
-
-                    Quaternion flatRot = Quaternion.LookRotation(skidDir, hit.normal)
-                                        * Quaternion.Euler(90f, 0f, 0f);
-                    w.skidTrail.transform.rotation = flatRot;
+                        Quaternion flatRot = Quaternion.LookRotation(skidDir, hit.normal)
+                                            * Quaternion.Euler(90f, 0f, 0f);
+                        w.skidTrail.transform.rotation = flatRot;
+                    }
                 }
                 else if (w.skidTrail != null && w.skidTrail.emitting)
                 {
+                    // Stop emitting and detach the skid trail so it remains in the scene to fade out.
                     w.skidTrail.emitting = false;
+                    w.skidTrail.transform.parent = null;
+                    // Optionally, destroy the skid trail after its lifetime has elapsed.
+                    Destroy(w.skidTrail.gameObject, w.skidTrail.time);
+                    w.skidTrail = null;
                 }
             }
             else
