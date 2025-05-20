@@ -54,7 +54,7 @@ public class Car : MonoBehaviour
     public bool throttleAssist = true;
     public bool brakeAssist = true;
     [HideInInspector] public Vector2 userInput = Vector2.zero;
-
+    float downforce = 0.16f;
 
     void Start()
     {
@@ -91,7 +91,7 @@ public class Car : MonoBehaviour
         // Get player input for reference
         userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal"), 0.2f);
         userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical"), 0.2f);
-        bool isBraking = Input.GetKey(KeyCode.Space) || (Input.GetKey(KeyCode.S) && forwards);
+        bool isBraking = Input.GetKey(KeyCode.S) && forwards;
         if (isBraking) userInput.y = 0;
 
         float maxSlip = 0;
@@ -140,9 +140,9 @@ public class Car : MonoBehaviour
 
     void FixedUpdate()
     {
-        Debug.Log(rb.velocity.magnitude);
-        rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * 0.2f, transform.position);
-
+        // Debug.Log(rb.velocity.magnitude);
+        rb.AddForce(-transform.up * rb.velocity.magnitude * downforce);
+        float totalNormalForce = 0;
         foreach (var w in wheels)
         {
             RaycastHit hit;
@@ -169,6 +169,10 @@ public class Car : MonoBehaviour
 
             w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
             w.angularVelocity *= 1 - w.braking * w.brakeStrength * Time.fixedDeltaTime;
+            if (Input.GetKey(KeyCode.Space)) // Handbrake
+            {
+                w.angularVelocity = 0;
+            }
 
             Vector3 totalLocalForce = new Vector3(lateralFriction, 0f, longitudinalFriction)
                 * w.normalForce * coefStaticFriction * Time.fixedDeltaTime;
@@ -188,6 +192,7 @@ public class Car : MonoBehaviour
                 float damping = (w.lastSuspensionLength - hit.distance) * dampAmount;
                 w.normalForce = (compression + damping) * suspensionForce;
                 w.normalForce = Mathf.Clamp(w.normalForce, 0f, suspensionForceClamp);
+                totalNormalForce += w.normalForce;
 
                 Vector3 springDir = hit.normal * w.normalForce;
                 w.suspensionForceDirection = springDir;
@@ -253,11 +258,14 @@ public class Car : MonoBehaviour
                 }
             }
 
+
+
             wheelVisual.Rotate(
                 Vector3.right,
                 w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime,
                 Space.Self
             );
         }
+        Debug.Log(totalNormalForce);
     }
 }
