@@ -49,6 +49,13 @@ public class Car : MonoBehaviour
     [HideInInspector] public bool forwards = true;
 
 
+    // Assists
+    public bool steeringAssist = true;
+    public bool throttleAssist = true;
+    public bool brakeAssist = true;
+    [HideInInspector] public Vector2 userInput = Vector2.zero;
+
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -81,16 +88,53 @@ public class Car : MonoBehaviour
 
     void Update()
     {
-        if (GetComponent<Assist>() == null)
+        // Get player input for reference
+        userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal"), 0.2f);
+        userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical"), 0.2f);
+        bool isBraking = Input.GetKey(KeyCode.Space) || (Input.GetKey(KeyCode.S) && forwards);
+        if (isBraking) userInput.y = 0;
+
+        float maxSlip = 0;
+        // Calculate the maximum slip of all wheels
+        for (int i = 0; i < wheels.Length; i++)
         {
-            foreach (var w in wheels)
+            maxSlip = Mathf.Max(maxSlip, wheels[i].slip);
+        }
+
+        for (int i = 0; i < wheels.Length; i++)
+        {
+            if (throttleAssist && maxSlip > 0.96f)
             {
-                w.input = new Vector2(
-                    Mathf.Lerp(w.input.x, Input.GetAxisRaw("Horizontal"), smoothTurn),
-                    Input.GetAxisRaw("Vertical")
-                );
-                w.braking = Input.GetKey(KeyCode.Space) ? 1 : 0;
+                // Reduce throttle input if slip is too high
+                userInput.y = Mathf.Lerp(userInput.y, 0, maxSlip);
             }
+            
+            if (steeringAssist && maxSlip > 0.6f)
+            {
+                // Reduce steering input if slip is too high
+                userInput.x = Mathf.Lerp(userInput.x, 0, 0.1f);
+            }
+            // Apply counter-steering when slipping severely
+            if (maxSlip > 1.0f && wheels[i].localVelocity.magnitude > 0.1f)
+            {
+                // Calculate the angle between the wheel's forward direction and the sliding direction
+                float angle = Mathf.Atan2(wheels[i].localVelocity.x, wheels[i].localVelocity.z) * Mathf.Rad2Deg;
+                
+                // Apply counter-steering to match the sliding direction
+                wheels[i].input = new Vector2(
+                    Mathf.Lerp(wheels[i].input.x, Mathf.Clamp(angle / wheels[i].turnAngle, -1f, 1f), 0.1f),
+                    wheels[i].input.y
+                );
+            }
+
+            if (brakeAssist && maxSlip > 0.99f)
+            {
+                // Reduce braking input if slip is too high
+                isBraking = false;
+            }
+
+            wheels[i].braking = Mathf.Lerp(wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
+            wheels[i].input = new Vector2(userInput.x, userInput.y);
         }
     }
 
