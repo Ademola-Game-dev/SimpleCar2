@@ -36,8 +36,8 @@ public class Car : MonoBehaviour
 {
     public GameObject skidMarkPrefab;
     public float smoothTurn = 0.03f;
-    float coefStaticFriction = 2.95f;
-    float coefKineticFriction = 0.85f;
+    float coefStaticFriction = 0.95f;
+    float coefKineticFriction = 0.45f;
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
     public float wheelGripX = 8f;
@@ -82,7 +82,7 @@ public class Car : MonoBehaviour
             }
         }
 
-        rb.centerOfMass += new Vector3(0, -0.5f, 0);
+        rb.centerOfMass += new Vector3(0, -0.4f, 0);
         rb.inertiaTensor *= 1.4f;
     }
 
@@ -226,11 +226,9 @@ public class Car : MonoBehaviour
                         w.skidTrail.transform.position = hit.point;
 
                         Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
-                        if (skidDir.sqrMagnitude < 0.001f)
-                            skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
+                        if (skidDir.sqrMagnitude < 0.001f) skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
 
-                        Quaternion flatRot = Quaternion.LookRotation(skidDir, hit.normal)
-                                            * Quaternion.Euler(90f, 0f, 0f);
+                        Quaternion flatRot = Quaternion.LookRotation(skidDir, hit.normal) * Quaternion.Euler(90f, 0f, 0f);
                         w.skidTrail.transform.rotation = flatRot;
                     }
                 }
@@ -255,8 +253,6 @@ public class Car : MonoBehaviour
                     w.skidTrail = null;
                 }
             }
-
-
 
             wheelVisual.Rotate(
                 Vector3.right,
