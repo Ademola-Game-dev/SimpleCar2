@@ -36,7 +36,7 @@ public class Car : MonoBehaviour
 {
     public GameObject skidMarkPrefab;
     public float smoothTurn = 0.03f;
-    float coefStaticFriction = 0.95f;
+    float coefStaticFriction = 1.95f;
     float coefKineticFriction = 0.45f;
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
@@ -45,9 +45,8 @@ public class Car : MonoBehaviour
     public float suspensionForce = 90f;
     public float dampAmount = 2.5f;
     public float suspensionForceClamp = 200f;
-    private Rigidbody rb;
+    [HideInInspector] public Rigidbody rb;
     [HideInInspector] public bool forwards = true;
-
 
     // Assists
     public bool steeringAssist = true;
@@ -55,6 +54,8 @@ public class Car : MonoBehaviour
     public bool brakeAssist = true;
     [HideInInspector] public Vector2 userInput = Vector2.zero;
     public float downforce = 0.16f;
+    [HideInInspector] public bool isBraking = false;
+    [HideInInspector] public float targetRPM = 0f;
 
     void Start()
     {
@@ -91,57 +92,25 @@ public class Car : MonoBehaviour
         // Get player input for reference
         userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal") / (1 + rb.velocity.magnitude / 28f), 0.2f);
         userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical"), 0.2f);
-        bool isBraking = Input.GetKey(KeyCode.S) && forwards;
+        isBraking = Input.GetKey(KeyCode.S) && forwards;
         if (isBraking) userInput.y = 0;
 
-        float maxSlip = 0;
-        // Calculate the maximum slip of all wheels
         for (int i = 0; i < wheels.Length; i++)
         {
-            maxSlip = Mathf.Max(maxSlip, wheels[i].slip);
-        }
-
-        for (int i = 0; i < wheels.Length; i++)
-        {
-            if (throttleAssist && maxSlip > 0.96f)
-            {
-                // Reduce throttle input if slip is too high
-                userInput.y = Mathf.Lerp(userInput.y, 0, maxSlip);
-            }
-            
-            if (steeringAssist && maxSlip > 0.7f)
-            {
-                // Reduce steering input if slip is too high
-                userInput.x = Mathf.Lerp(userInput.x, 0, 0.05f);
-            }
-            // Apply counter-steering when slipping severely
-            if (maxSlip > 1.0f && wheels[i].localVelocity.magnitude > 0.1f)
-            {
-                // Calculate the angle between the wheel's forward direction and the sliding direction
-                float angle = Mathf.Atan2(wheels[i].localVelocity.x, wheels[i].localVelocity.z) * Mathf.Rad2Deg;
-                
-                // Apply counter-steering to match the sliding direction
-                wheels[i].input = new Vector2(
-                    Mathf.Lerp(wheels[i].input.x, Mathf.Clamp(angle / wheels[i].turnAngle, -1f, 1f), 0.1f),
-                    wheels[i].input.y
-                );
-            }
-
-            if (brakeAssist && maxSlip > 0.99f)
-            {
-                // Reduce braking input if slip is too high
-                isBraking = false;
-            }
-
+            float s = wheels[i].slip;
+            if (throttleAssist && s > 0.90f) wheels[i].input.y = Mathf.Lerp(wheels[i].input.y, 0, s);
+            if (steeringAssist && s > 0.80f) wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, 0, 0.2f);
+            if (brakeAssist && s > 0.99f) isBraking = false;
             wheels[i].braking = Mathf.Lerp(wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
-            wheels[i].input = new Vector2(userInput.x, userInput.y);
+            wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, userInput.x, 0.05f);
+            wheels[i].input.y = Mathf.Lerp(wheels[i].input.y, userInput.y, 0.05f);
         }
     }
 
     void FixedUpdate()
     {
-        // Debug.Log(rb.velocity.magnitude);
         rb.AddForce(-transform.up * rb.velocity.magnitude * downforce);
+        float averageWheelAngularVelocity = 0f;
         foreach (var w in wheels)
         {
             RaycastHit hit;
@@ -241,6 +210,7 @@ public class Car : MonoBehaviour
                     Destroy(w.skidTrail.gameObject, w.skidTrail.time);
                     w.skidTrail = null;
                 }
+                averageWheelAngularVelocity += w.angularVelocity;
             }
             else
             {
@@ -253,6 +223,16 @@ public class Car : MonoBehaviour
                     w.skidTrail = null;
                 }
             }
+
+            averageWheelAngularVelocity /= wheels.Length;
+            float averageWheelRPM = (averageWheelAngularVelocity * 60f) / (2f * Mathf.PI);
+            float[] gearRatios = { 3.5f, 2.0f, 1.5f, 1.0f, 0.8f };
+            float finalDriveRatio = 4.0f;
+            int currentGear = 0;
+            float totalRatio = Math.Abs(gearRatios[currentGear] * finalDriveRatio);
+            float idleRPM = 1000f;
+            float maxRPM = 7000f;
+            targetRPM = Mathf.Max(idleRPM, averageWheelRPM * totalRatio);
 
             wheelVisual.Rotate(
                 Vector3.right,
