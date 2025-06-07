@@ -43,13 +43,42 @@ public class ui : MonoBehaviour
         {
             float slip = float.IsNaN(wheel.slip) ? 0f : wheel.slip;
             wheelSlip[at] = Mathf.Lerp(wheelSlip[at], slip, 0.05f);
-            wheelStates += (wheelSlip[at]).ToString("F2") + " ";
+            
+            string slipText = wheelSlip[at].ToString("F2");
+            if (wheelSlip[at] > 1f)
+                slipText = "<color=blue>" + slipText + "</color>";
+            else if (wheelSlip[at] > 0.9f)
+                slipText = "<color=red>" + slipText + "</color>";
+            else if (wheelSlip[at] > 0.7f)
+                slipText = "<color=yellow>" + slipText + "</color>";
+            else
+                slipText = "<color=green>" + slipText + "</color>";
+
+            wheelStates += slipText + " ";
             at++;
         }
-        text.text = (xV = Mathf.Lerp(xV, car.userInput.x, 0.05f)).ToString("F2") + "\n" +
-                    (yV = Mathf.Lerp(yV, (float)(car.userInput.y - (car.isBraking == true ? 1.0 : 0.0)), 0.05f)).ToString("F2") + "\n" +
-                    (car.rb.velocity.magnitude * 3.6f).ToString("F2") + "kph \n" +
-                    car.targetRPM.ToString("F2") + "\n" +
+
+        float currentRPM = car.e.getRPM();
+        float maxRPM = car.e.maxRPM;  // Assumes you have this accessible
+        string rpmText = car.e.getCurrentGear() + " " + currentRPM.ToString("F0");
+        if (car.e.isSwitchingGears())
+        {
+            rpmText = "<color=blue>" + rpmText + "</color>";
+        }
+        else if (currentRPM > 0.8f * maxRPM)
+            rpmText = "<color=red>" + rpmText + "</color>";
+        else if (currentRPM > 0.6f * maxRPM)
+            rpmText = "<color=yellow>" + rpmText + "</color>";
+        else
+            rpmText = "<color=green>" + rpmText + "</color>";
+        
+        rpmText += " " + car.e.GetCurrentPower(this).ToString("F2");
+
+        text.text =
+                    // (xV = Mathf.Lerp(xV, car.userInput.x, 0.05f)).ToString("F2") + "\n" +
+                    // (yV = Mathf.Lerp(yV, (float)(car.userInput.y - (car.isBraking ? 1.0 : 0.0)), 0.05f)).ToString("F2") + "\n" +
+                    (car.rb.velocity.magnitude * 3.6f).ToString("F0") + " kph \n" +
+                    rpmText + "\n" +
                     wheelStates;
     }
 }

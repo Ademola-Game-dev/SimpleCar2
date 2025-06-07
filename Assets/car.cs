@@ -1,6 +1,99 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.Events;
+
+// todo:
+// braking should be 0-1 float not bool
+// w.torque shoudl be part of engine, not wheel
+
+[Serializable]
+public class Engine
+{
+    public float idleRPM = 2400f;
+    public float maxRPM = 7000f;
+    public float[] gearRatios = { 3.50f, 2.80f, 2.30f, 1.90f, 1.60f, 1.30f, 1.00f, 0.85f };
+    public float finalDriveRatio = 4.0f;
+    private int currentGear = 0;
+    public bool automaticTransmission = true;
+    private bool switchingGears = false;
+    private float gearChangeTime = 0.5f; //seconds to switch gears
+    private float rpm = 0f;
+    public void SetRPM(float averageWheelAngularVelocity)
+    {
+        float averageWheelRPM = (averageWheelAngularVelocity * 60f) / (2f * Mathf.PI);
+        float totalRatio = Math.Abs(gearRatios[currentGear] * finalDriveRatio);
+        float transmissionRPM = averageWheelRPM * totalRatio;
+        float targetRPM = Mathf.Max(idleRPM, transmissionRPM);
+        this.rpm = Mathf.Clamp(targetRPM, idleRPM, maxRPM);
+    }
+    public float GetCurrentPower(MonoBehaviour context) // 0-1 based on RPM
+    {
+        if (switchingGears) return 0f; // No power during gear switch
+        return Mathf.Clamp01(rpm / maxRPM);
+    }
+    public float AngularVelocityToRPM(float angularVelocity)
+    {
+        return angularVelocity * 60f / (2f * Mathf.PI);
+    }
+
+    public void UpGear(MonoBehaviour context)
+    {
+        if (currentGear < gearRatios.Length - 1 && !switchingGears)
+        {
+            currentGear++;
+            switchingGears = true;
+            // Start coroutine to reset switchingGears after 0.4 seconds
+            context.StartCoroutine(ResetSwitchingGearsCoroutine());
+        }
+    }
+
+    public void DownGear(MonoBehaviour context)
+    {
+        if (currentGear > 0 && !switchingGears)
+        {
+            currentGear--;
+            switchingGears = true;
+            // Start coroutine to reset switchingGears after 0.4 seconds
+            context.StartCoroutine(ResetSwitchingGearsCoroutine());
+        }
+    }
+
+    private System.Collections.IEnumerator ResetSwitchingGearsCoroutine()
+    {
+        yield return new WaitForSeconds(gearChangeTime);
+        switchingGears = false;
+    }
+
+    public int getCurrentGear()
+    {
+        return currentGear + 1; // Return 1-based gear number
+    }
+
+    public void checkGearSwitching(MonoBehaviour context)
+    {
+        if (switchingGears) return;
+
+        // Check if the RPM is too high or too low for the current gear
+        if (rpm > maxRPM * 0.82f && currentGear < gearRatios.Length - 1)
+        {
+            UpGear(context);
+        }
+        else if (rpm < idleRPM * 0.8f && currentGear > 0)
+        {
+            DownGear(context);
+        }
+    }
+
+    public float getRPM()
+    {
+        return rpm;
+    }
+    public bool isSwitchingGears()
+    {
+        return switchingGears;
+    }
+}
 
 [Serializable]
 public class WheelProperties
@@ -34,10 +127,11 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public Engine e;
     public GameObject skidMarkPrefab;
     public float smoothTurn = 0.03f;
     float coefStaticFriction = 1.95f;
-    float coefKineticFriction = 0.45f;
+    float coefKineticFriction = 0.95f;
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
     public float wheelGripX = 8f;
@@ -55,7 +149,9 @@ public class Car : MonoBehaviour
     [HideInInspector] public Vector2 userInput = Vector2.zero;
     public float downforce = 0.16f;
     [HideInInspector] public bool isBraking = false;
-    [HideInInspector] public float targetRPM = 0f;
+
+    public Vector3 COMOffset = new Vector3(0, -0.2f, 0);
+    public float Inertia = 1.2f; // Multiplier for inertia tensor
 
     void Start()
     {
@@ -83,13 +179,12 @@ public class Car : MonoBehaviour
             }
         }
 
-        rb.centerOfMass += new Vector3(0, -0.4f, 0);
-        rb.inertiaTensor *= 1.4f;
+        rb.centerOfMass += COMOffset;
+        rb.inertiaTensor *= Inertia;
     }
 
     void Update()
     {
-        Debug.Log($"Accelerate (Axis 10): {Input.GetAxisRaw("Accelerate")}, Brake (Axis 9): {Input.GetAxisRaw("Brake")}");
         // Get player input for reference
         userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal") / (1 + rb.velocity.magnitude / 28f), 0.9f);
         userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical") + Input.GetAxisRaw("Accelerate") - Input.GetAxisRaw("Brake"), 0.9f);
@@ -106,6 +201,11 @@ public class Car : MonoBehaviour
             wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, userInput.x, 0.04f);
             wheels[i].input.y = Mathf.Lerp(wheels[i].input.y, userInput.y, 0.09f);
         }
+
+        if (Input.GetKeyDown(KeyCode.E)) e.UpGear(this);
+        else if (Input.GetKeyDown(KeyCode.D)) e.DownGear(this);
+
+        e.checkGearSwitching(this);
     }
 
     void FixedUpdate()
@@ -124,7 +224,7 @@ public class Car : MonoBehaviour
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
             w.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
             forwards = w.localVelocity.z > 0.1f;
-            w.torque = w.engineTorque * w.input.y;
+            w.torque = w.engineTorque * w.input.y * e.GetCurrentPower(this);
 
             float inertia = w.mass * w.size * w.size / 2f;
             float lateralVel = w.localVelocity.x;
@@ -226,14 +326,7 @@ public class Car : MonoBehaviour
             }
 
             averageWheelAngularVelocity /= wheels.Length;
-            float averageWheelRPM = (averageWheelAngularVelocity * 60f) / (2f * Mathf.PI);
-            float[] gearRatios = { 3.5f, 2.0f, 1.5f, 1.0f, 0.8f };
-            float finalDriveRatio = 4.0f;
-            int currentGear = 0;
-            float totalRatio = Math.Abs(gearRatios[currentGear] * finalDriveRatio);
-            float idleRPM = 1000f;
-            float maxRPM = 7000f;
-            targetRPM = Mathf.Max(idleRPM, averageWheelRPM * totalRatio);
+            e.SetRPM(averageWheelAngularVelocity);
 
             wheelVisual.Rotate(
                 Vector3.right,
