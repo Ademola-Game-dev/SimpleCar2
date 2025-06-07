@@ -89,9 +89,10 @@ public class Car : MonoBehaviour
 
     void Update()
     {
+        Debug.Log($"Accelerate (Axis 10): {Input.GetAxisRaw("Accelerate")}, Brake (Axis 9): {Input.GetAxisRaw("Brake")}");
         // Get player input for reference
         userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal") / (1 + rb.velocity.magnitude / 28f), 0.9f);
-        userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical"), 0.9f);
+        userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical") + Input.GetAxisRaw("Accelerate") - Input.GetAxisRaw("Brake"), 0.9f);
         isBraking = Input.GetKey(KeyCode.S) && forwards;
         if (isBraking) userInput.y = 0;
 
@@ -99,7 +100,7 @@ public class Car : MonoBehaviour
         {
             float s = wheels[i].slip;
             if (throttleAssist && s > 0.90f) wheels[i].input.y = Mathf.Lerp(wheels[i].input.y, 0, s);
-            if (steeringAssist && s > 0.80f && s < 1.05f) wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, 0, 0.2f);
+            if (steeringAssist && s > 0.80f) wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, 0, 0.2f * s);
             if (brakeAssist && s > 0.99f) isBraking = false;
             wheels[i].braking = Mathf.Lerp(wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
             wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, userInput.x, 0.04f);
