@@ -194,7 +194,7 @@ public class Car : MonoBehaviour
         for (int i = 0; i < wheels.Length; i++)
         {
             float s = wheels[i].slip;
-            if (throttleAssist && s > 0.90f) wheels[i].input.y = Mathf.Lerp(wheels[i].input.y, 0, s);
+            if (throttleAssist && s > 0.80f) wheels[i].input.y = Mathf.Lerp(wheels[i].input.y, 0, s);
             if (steeringAssist && s > 0.80f) wheels[i].input.x = Mathf.Lerp(wheels[i].input.x, 0, 0.2f * s);
             if (brakeAssist && s > 0.99f) isBraking = false;
             wheels[i].braking = Mathf.Lerp(wheels[i].braking, (float)(isBraking ? 1 : 0), 0.2f);
@@ -271,44 +271,54 @@ public class Car : MonoBehaviour
 
                 if (w.slidding)
                 {
-                    // If no skid trail exists or if it was detached previously, instantiate a new one.
+                    // If no skid trail exists, instantiate a new one but don't start emitting yet
                     if (w.skidTrail == null && skidMarkPrefab != null)
                     {
                         GameObject skidTrailObj = Instantiate(skidMarkPrefab, transform);
                         skidTrailObj.transform.SetParent(w.wheelObject.transform);
                         skidTrailObj.transform.localPosition = Vector3.zero;
                         w.skidTrail = skidTrailObj.GetComponent<TrailRenderer>();
-                        w.skidTrail.time = 3f; // Trail lasts for 10 seconds
+                        w.skidTrail.time = 3f;
                         w.skidTrail.autodestruct = true;
-                        if (w.skidTrail != null)
-                        {
-                            w.skidTrail.emitting = true;
-                        }
+                        w.skidTrail.emitting = false; // Start with emitting disabled
+                        w.skidTrail.transform.position = hit.point;
+                        
+                        // Set initial rotation
+                        Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
+                        if (skidDir.sqrMagnitude < 0.001f) skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
+                        Quaternion flatRot = Quaternion.LookRotation(skidDir, hit.normal) * Quaternion.Euler(90f, 0f, 0f);
+                        w.skidTrail.transform.rotation = flatRot;
                     }
                     else if (w.skidTrail != null)
                     {
-                        // Continue emitting and update its position to the contact point.
-                        w.skidTrail.emitting = true;
+                        // Only start emitting after the trail has existed for at least one frame
+                        if (!w.skidTrail.emitting)
+                        {
+                            w.skidTrail.emitting = true;
+                        }
+                        
+                        // Update position and rotation
                         w.skidTrail.transform.position = hit.point;
-                        // Align the skid trail so its up vector is the road normal.
-                        // This projects the wheel's forward direction onto the road plane to preserve skid direction.
-                        // Now update to real position/rotation
-                        w.skidTrail.transform.position = hit.point;
-
                         Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
                         if (skidDir.sqrMagnitude < 0.001f) skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
-
                         Quaternion flatRot = Quaternion.LookRotation(skidDir, hit.normal) * Quaternion.Euler(90f, 0f, 0f);
                         w.skidTrail.transform.rotation = flatRot;
                     }
                 }
-                else if (w.skidTrail != null && w.skidTrail.emitting)
+                else if (w.skidTrail != null)
                 {
-                    // Stop emitting and detach the skid trail so it remains in the scene to fade out.
-                    w.skidTrail.emitting = false;
-                    w.skidTrail.transform.parent = null;
-                    // Optionally, destroy the skid trail after its lifetime has elapsed.
-                    Destroy(w.skidTrail.gameObject, w.skidTrail.time);
+                    // Only detach and destroy if the trail was actually emitting (had multiple points)
+                    if (w.skidTrail.emitting)
+                    {
+                        w.skidTrail.emitting = false;
+                        w.skidTrail.transform.parent = null;
+                        Destroy(w.skidTrail.gameObject, w.skidTrail.time);
+                    }
+                    else
+                    {
+                        // If it never started emitting, just destroy it immediately
+                        Destroy(w.skidTrail.gameObject);
+                    }
                     w.skidTrail = null;
                 }
                 averageWheelAngularVelocity += w.angularVelocity;
