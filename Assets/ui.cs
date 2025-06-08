@@ -77,12 +77,26 @@ public class ui : MonoBehaviour
             tcsFactor += car.wheels[i].tcsReduction.ToString("F2") + " ";
         }
 
+        string inputText = "Input: ";
+        for (int i = 0; i < car.wheels.Length; i++)
+        {
+            inputText += car.wheels[i].input.ToString("F2") + " ";
+        }
+
+        string brakingText = "Braking: ";
+        for (int i = 0; i < car.wheels.Length; i++)
+        {
+            brakingText += car.wheels[i].braking.ToString("F2") + " ";
+        }
+
         text.text =
                     // (xV = Mathf.Lerp(xV, car.userInput.x, 0.05f)).ToString("F2") + "\n" +
                     // (yV = Mathf.Lerp(yV, (float)(car.userInput.y - (car.isBraking ? 1.0 : 0.0)), 0.05f)).ToString("F2") + "\n" +
                     (car.rb.velocity.magnitude * 3.6f).ToString("F0") + " kph \n" +
                     rpmText + "\n" +
                     wheelStates +
-                    "\n" + tcsFactor;
+                    "\n" + tcsFactor +
+                    "\n" + inputText +
+                    "\n" + brakingText;
     }
 }

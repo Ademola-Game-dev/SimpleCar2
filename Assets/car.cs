@@ -227,32 +227,17 @@ public class Car : MonoBehaviour
                 else if (w.slip < targetSlip - slipTolerance)
                 {
                     // If slip is below the lower bound, quickly restore power
-                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, 0f, 0.1f * Time.deltaTime);
+                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, 0f, 0.6f * Time.deltaTime);
                 }
                 // Clamp TCS reduction to [0, 1] range
                 w.tcsReduction = Mathf.Clamp01(w.tcsReduction);
             }
-
-            // Improved braking logic (ABS-like, float 0-1)
-            // float absTarget = targetBrake;
-            // if (brakeAssist)
-            // {
-            //     // If slip is too high, reduce brake force (simulate ABS)
-            //     if (w.slip > 0.95f)
-            //     {
-            //         float excess = Mathf.Clamp01((w.slip - 1.0f) * 2f);
-            //         absTarget *= 1f - excess; // Reduce brake as slip increases
-            //     }
-            // }
-            // w.braking = Mathf.Lerp(w.braking, absTarget, 0.4f); // Fast, but smooth
-            // if (float.IsNaN(w.braking) || float.IsInfinity(w.braking))
-            //     w.braking = 0f;
-            w.braking = targetBrake *( 1- w.tcsReduction);
+            w.braking = targetBrake * (1 - w.tcsReduction);
 
             // Apply steering input smoothing (steering assist or slip-based reduction can be added here if desired)
             float s = Mathf.Clamp01(w.slip);
             w.input.x = Mathf.Lerp(w.input.x, userInput.x, (1 - s) * Time.deltaTime * 10f);
-            if (s > 0.7f) w.input.x = Mathf.Lerp(w.input.x, 0, s * Time.deltaTime * 40f);
+            if (s > 0.4f) w.input.x = Mathf.Lerp(w.input.x, 0, s * Time.deltaTime * 20f);
             
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
