@@ -17,7 +17,7 @@ public class Engine
     private int currentGear = 0;
     public bool automaticTransmission = true;
     private bool switchingGears = false;
-    private float gearChangeTime = 0.5f; //seconds to switch gears
+    private float gearChangeTime = 0.18f; //seconds to switch gears
     private float rpm = 0f;
     public void SetRPM(float averageWheelAngularVelocity)
     {
@@ -29,7 +29,7 @@ public class Engine
     }
     public float GetCurrentPower(MonoBehaviour context) // 0-1 based on RPM
     {
-        if (switchingGears) return 0f; // No power during gear switch
+        if (switchingGears) return 0.3f; // Less power during gear switch
         return Mathf.Clamp01(rpm / maxRPM);
     }
     public float AngularVelocityToRPM(float angularVelocity)
@@ -75,11 +75,11 @@ public class Engine
         if (switchingGears) return;
 
         // Check if the RPM is too high or too low for the current gear
-        if (rpm > maxRPM * 0.82f && currentGear < gearRatios.Length - 1)
+        if (rpm > maxRPM * 0.95f && currentGear < gearRatios.Length - 1)
         {
             UpGear(context);
         }
-        else if (rpm < idleRPM * 0.8f && currentGear > 0)
+        else if (rpm < maxRPM * 0.6f && currentGear > 0)
         {
             DownGear(context);
         }
@@ -124,7 +124,6 @@ public class WheelProperties
     [HideInInspector] public Vector2 input = Vector2.zero;
     [HideInInspector] public float braking = 0;
     [HideInInspector] public float slipHistory = 0f;
-    [HideInInspector] public float smoothedSlip = 0f;
     [HideInInspector] public float tcsReduction = 0f; // Traction control reduction factor
 }
 
@@ -184,7 +183,6 @@ public class Car : MonoBehaviour
 
         foreach (var w in wheels)
         {
-            w.smoothedSlip = 0f;
             w.tcsReduction = 0f;
             w.slipHistory = 0f;
         }
@@ -197,16 +195,10 @@ public class Car : MonoBehaviour
     {
         // Get player input for reference
         userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal") / (1 + rb.velocity.magnitude / 28f), 0.9f);
-        userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical") + Input.GetAxisRaw("Accelerate") - Input.GetAxisRaw("Brake"), 0.9f);
+        userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical") + Input.GetAxis("LT") - Input.GetAxis("Fire2"), 0.9f);
         isBraking = Input.GetKey(KeyCode.S) && forwards;
         float brakeInput = Mathf.Clamp01(Input.GetAxisRaw("Brake"));
         float autoBrake = 0f;
-        // Optional: Add auto-brake if slip is excessive (like ABS)
-        foreach (var w in wheels)
-        {
-            if (brakeAssist && w.smoothedSlip > 1.0f)
-                autoBrake = Mathf.Max(autoBrake, Mathf.Clamp01((w.smoothedSlip - 1.0f) * 2f));
-        }
         float targetBrake = Mathf.Max((isBraking ? 1f : 0f), brakeInput, autoBrake);
         if (isBraking) userInput.y = 0;
 
@@ -217,80 +209,56 @@ public class Car : MonoBehaviour
             // Ensure no NaN values from previous frames
             if (float.IsNaN(w.slip) || float.IsInfinity(w.slip))
                 w.slip = 0f;
-            if (float.IsNaN(w.smoothedSlip) || float.IsInfinity(w.smoothedSlip))
-                w.smoothedSlip = 0f;
-            if (float.IsNaN(w.tcsReduction) || float.IsInfinity(w.tcsReduction))
-                w.tcsReduction = 0f;
-            if (float.IsNaN(w.braking) || float.IsInfinity(w.braking))
-                w.braking = 0f;
-            
-            // Much more aggressive slip smoothing for F1 cars
-            w.smoothedSlip = Mathf.Lerp(w.smoothedSlip, w.slip, 0.8f);
-            
-            // Additional safety check after smoothing
-            if (float.IsNaN(w.smoothedSlip) || float.IsInfinity(w.smoothedSlip))
-                w.smoothedSlip = 0f;
             
             // High-performance F1 traction control
             if (throttleAssist)
             {
                 float targetSlip = 0.85f; // Desired slip ratio for max traction
                 float slipTolerance = 0.05f; // Allowable deviation from target slip
-                if (w.smoothedSlip > targetSlip + slipTolerance)
+                if (w.slip > targetSlip + slipTolerance)
                 {
                     // If slip exceeds the upper bound, calculate how much it overshoots
-                    float overshoot = w.smoothedSlip - targetSlip;
+                    float overshoot = w.slip - targetSlip;
                     // Convert overshoot to a reduction factor (aggressive multiplier)
-                    float reduction = Mathf.Clamp01(overshoot * 4.0f);
+                    float reduction = Mathf.Clamp01(overshoot * 2.0f);
                     // Aggressively increase TCS reduction to cut power fast
-                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, reduction, 0.1f);
+                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, 1, reduction/5f);
                 }
-                else if (w.smoothedSlip < targetSlip - slipTolerance)
+                else if (w.slip < targetSlip - slipTolerance)
                 {
                     // If slip is below the lower bound, quickly restore power
-                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, 0f, 0.01f);
+                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, 0f, 0.1f * Time.deltaTime);
                 }
-                else
-                {
-                    // If slip is within the sweet spot, make small adjustments to maintain it
-                    float adjustment = (targetSlip - w.smoothedSlip) * 0.1f;
-                    w.tcsReduction = Mathf.Clamp01(w.tcsReduction - adjustment);
-                }
-                if (w.smoothedSlip > 1.2f)
-                {
-                    // Emergency: if slip is extreme, force a high reduction
-                    w.tcsReduction = Mathf.Lerp(w.tcsReduction, 0.8f, 0.8f);
-                }
-                if (float.IsNaN(w.tcsReduction) || float.IsInfinity(w.tcsReduction))
-                    // Safety: fallback to a safe value if TCS reduction is invalid
-                    w.tcsReduction = 0.5f;
                 // Clamp TCS reduction to [0, 1] range
                 w.tcsReduction = Mathf.Clamp01(w.tcsReduction);
             }
-            
+
             // Improved braking logic (ABS-like, float 0-1)
-            float absTarget = targetBrake;
-            if (brakeAssist)
-            {
-                // If slip is too high, reduce brake force (simulate ABS)
-                if (w.smoothedSlip > 1.0f)
-                {
-                    float excess = Mathf.Clamp01((w.smoothedSlip - 1.0f) * 2f);
-                    absTarget *= 1f - excess; // Reduce brake as slip increases
-                }
-            }
-            w.braking = Mathf.Lerp(w.braking, absTarget, 0.4f); // Fast, but smooth
-            if (float.IsNaN(w.braking) || float.IsInfinity(w.braking))
-                w.braking = 0f;
-            
+            // float absTarget = targetBrake;
+            // if (brakeAssist)
+            // {
+            //     // If slip is too high, reduce brake force (simulate ABS)
+            //     if (w.slip > 0.95f)
+            //     {
+            //         float excess = Mathf.Clamp01((w.slip - 1.0f) * 2f);
+            //         absTarget *= 1f - excess; // Reduce brake as slip increases
+            //     }
+            // }
+            // w.braking = Mathf.Lerp(w.braking, absTarget, 0.4f); // Fast, but smooth
+            // if (float.IsNaN(w.braking) || float.IsInfinity(w.braking))
+            //     w.braking = 0f;
+            w.braking = targetBrake *( 1- w.tcsReduction);
+
             // Apply steering input smoothing (steering assist or slip-based reduction can be added here if desired)
-            w.input.x = Mathf.Lerp(w.input.x, userInput.x, 0.08f);
+            float s = Mathf.Clamp01(w.slip);
+            w.input.x = Mathf.Lerp(w.input.x, userInput.x, (1 - s) * Time.deltaTime * 10f);
+            if (s > 0.7f) w.input.x = Mathf.Lerp(w.input.x, 0, s * Time.deltaTime * 40f);
             
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
             if (float.IsNaN(finalThrottle) || float.IsInfinity(finalThrottle))
                 finalThrottle = 0f;
-            w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.25f);
+            w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f);
             if (float.IsNaN(w.input.y) || float.IsInfinity(w.input.y))
                 w.input.y = 0f;
         }

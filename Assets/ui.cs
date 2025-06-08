@@ -9,9 +9,6 @@ public class ui : MonoBehaviour
     // public TextMeshPro text
     public TextMeshProUGUI text;
     private Car car;
-
-    float xV = 0.0f;
-    float yV = 0.0f;
     float[] wheelSlip;
     void Start()
     {
@@ -42,8 +39,8 @@ public class ui : MonoBehaviour
         foreach (WheelProperties wheel in car.wheels)
         {
             float slip = float.IsNaN(wheel.slip) ? 0f : wheel.slip;
-            wheelSlip[at] = Mathf.Lerp(wheelSlip[at], slip, 0.05f);
-            
+            wheelSlip[at] = slip;
+
             string slipText = wheelSlip[at].ToString("F2");
             if (wheelSlip[at] > 1f)
                 slipText = "<color=blue>" + slipText + "</color>";
@@ -71,14 +68,21 @@ public class ui : MonoBehaviour
             rpmText = "<color=yellow>" + rpmText + "</color>";
         else
             rpmText = "<color=green>" + rpmText + "</color>";
-        
+
         rpmText += " " + car.e.GetCurrentPower(this).ToString("F2");
+
+        string tcsFactor = "TCS: ";
+        for (int i = 0; i < car.wheels.Length; i++)
+        {
+            tcsFactor += car.wheels[i].tcsReduction.ToString("F2") + " ";
+        }
 
         text.text =
                     // (xV = Mathf.Lerp(xV, car.userInput.x, 0.05f)).ToString("F2") + "\n" +
                     // (yV = Mathf.Lerp(yV, (float)(car.userInput.y - (car.isBraking ? 1.0 : 0.0)), 0.05f)).ToString("F2") + "\n" +
                     (car.rb.velocity.magnitude * 3.6f).ToString("F0") + " kph \n" +
                     rpmText + "\n" +
-                    wheelStates;
+                    wheelStates +
+                    "\n" + tcsFactor;
     }
 }
