@@ -66,7 +66,7 @@ public class camera : MonoBehaviour
     void LateUpdate()
     {
         if (justFollow) {
-            while ((transform.position - target.position).magnitude > 7f) transform.position = Vector3.Lerp(transform.position, target.position + Vector3.up * 1.8f, 0.00002f);
+            while ((transform.position - target.position).magnitude > 7f) transform.position = Vector3.Lerp(transform.position, target.position + Vector3.up * 2.2f, 0.00002f);
             transform.LookAt(target.position + Vector3.up * 1.2f);
             return;
         }

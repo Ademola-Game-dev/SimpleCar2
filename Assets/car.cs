@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
 
 // todo:
 // braking should be 0-1 float not bool
@@ -125,10 +126,12 @@ public class WheelProperties
     [HideInInspector] public float braking = 0;
     [HideInInspector] public float slipHistory = 0f;
     [HideInInspector] public float tcsReduction = 0f; // Traction control reduction factor
+    [HideInInspector] public float xSlipAngle = 0f; // Slip in X direction in degrees (5 degrees for example when slightly slipping)
 }
 
 public class Car : MonoBehaviour
 {
+    public InputActions input;
     public Engine e;
     public GameObject skidMarkPrefab;
     public float smoothTurn = 0.03f;
@@ -146,14 +149,20 @@ public class Car : MonoBehaviour
 
     // Assists
     public bool steeringAssist = true;
+    // slider 0-1 for steering assist strength
+    [Range(0f, 1f)] public float steeringAssistStrength = 0.2f; // Strength of steering assist
     public bool throttleAssist = true;
     public bool brakeAssist = true;
     [HideInInspector] public Vector2 userInput = Vector2.zero;
     public float downforce = 0.16f;
-    [HideInInspector] public bool isBraking = false;
+    [HideInInspector] public float isBraking = 0f;
 
     public Vector3 COMOffset = new Vector3(0, -0.2f, 0);
     public float Inertia = 1.2f; // Multiplier for inertia tensor
+    public Vector2 RawInput = Vector2.zero;
+    private InputAction move;
+    private InputAction Throttle;
+    private InputAction Steer;
 
     void Start()
     {
@@ -191,16 +200,33 @@ public class Car : MonoBehaviour
         rb.inertiaTensor *= Inertia;
     }
 
+    void Awake()
+    {
+        input = new InputActions();
+  }
+
+    private void OnEnable()
+    {
+        move = input.Move.Main;
+        move.Enable();
+        Throttle = input.Move.Throttle;
+        Throttle.Enable();
+        Steer = input.Move.Steer;
+        Steer.Enable();
+    }
+    private void OnDisable()
+    {
+        move.Disable();
+        Throttle.Disable();
+        Steer.Disable();
+    }
+
     void Update()
     {
         // Get player input for reference
-        userInput.x = Mathf.Lerp(userInput.x, Input.GetAxisRaw("Horizontal") / (1 + rb.velocity.magnitude / 28f), 0.9f);
-        userInput.y = Mathf.Lerp(userInput.y, Input.GetAxisRaw("Vertical") + Input.GetAxis("LT") - Input.GetAxis("Fire2"), 0.9f);
-        isBraking = Input.GetKey(KeyCode.S) && forwards;
-        float brakeInput = Mathf.Clamp01(Input.GetAxisRaw("Brake"));
-        float autoBrake = 0f;
-        float targetBrake = Mathf.Max((isBraking ? 1f : 0f), brakeInput, autoBrake);
-        if (isBraking) userInput.y = 0;
+        userInput.x = Mathf.Lerp(userInput.x, (move.ReadValue<Vector2>()[0] + Steer.ReadValue<float>()) / (1 + rb.velocity.magnitude / 28f), 0.9f * 50f * Time.deltaTime);
+        userInput.y = Mathf.Lerp(userInput.y, move.ReadValue<Vector2>()[1] + Throttle.ReadValue<float>(), 0.9f * 50f * Time.deltaTime);
+        isBraking = userInput.y < 0 && forwards ? Mathf.Abs(userInput.y) : 0f;
 
         for (int i = 0; i < wheels.Length; i++)
         {
@@ -232,18 +258,19 @@ public class Car : MonoBehaviour
                 // Clamp TCS reduction to [0, 1] range
                 w.tcsReduction = Mathf.Clamp01(w.tcsReduction);
             }
-            w.braking = targetBrake * (1 - w.tcsReduction);
+            w.braking = isBraking * (1 - w.tcsReduction);
 
             // Apply steering input smoothing (steering assist or slip-based reduction can be added here if desired)
             float s = Mathf.Clamp01(w.slip);
-            w.input.x = Mathf.Lerp(w.input.x, userInput.x, (1 - s) * Time.deltaTime * 10f);
-            if (s > 0.4f) w.input.x = Mathf.Lerp(w.input.x, 0, s * Time.deltaTime * 20f);
+            w.input.x = Mathf.Lerp(w.input.x, userInput.x, Time.deltaTime * 60f);
+            if (s > 0.3f && s < 1.5f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
+
             
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
             if (float.IsNaN(finalThrottle) || float.IsInfinity(finalThrottle))
                 finalThrottle = 0f;
-            w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f);
+            w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f * Time.deltaTime * 60f);
             if (float.IsNaN(w.input.y) || float.IsInfinity(w.input.y))
                 w.input.y = 0f;
         }
@@ -301,6 +328,8 @@ public class Car : MonoBehaviour
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
 
+            w.xSlipAngle = (Mathf.Atan2(w.localVelocity.x, w.localVelocity.z) * Mathf.Rad2Deg) - (w.turnAngle * w.input.x);
+
             if (grounded)
             {
                 float compression = rayLen - hit.distance;
@@ -328,7 +357,7 @@ public class Car : MonoBehaviour
                         w.skidTrail.autodestruct = true;
                         w.skidTrail.emitting = false; // Start with emitting disabled
                         w.skidTrail.transform.position = hit.point;
-                        
+
                         // Set initial rotation
                         Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
                         if (skidDir.sqrMagnitude < 0.001f) skidDir = Vector3.ProjectOnPlane(wheelObj.forward, hit.normal).normalized;
@@ -342,7 +371,7 @@ public class Car : MonoBehaviour
                         {
                             w.skidTrail.emitting = true;
                         }
-                        
+
                         // Update position and rotation
                         w.skidTrail.transform.position = hit.point;
                         Vector3 skidDir = Vector3.ProjectOnPlane(w.worldSlipDirection.normalized, hit.normal);
