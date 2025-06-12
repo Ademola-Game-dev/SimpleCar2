@@ -223,6 +223,15 @@ public class Car : MonoBehaviour
 
     void Update()
     {
+        // detect press of r key, reset rotation and move 2 units up
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            transform.rotation = Quaternion.identity;
+            transform.position += Vector3.up * 2f;
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
         // Get player input for reference
         userInput.x = Mathf.Lerp(userInput.x, (move.ReadValue<Vector2>()[0] + Steer.ReadValue<float>()) / (1 + rb.velocity.magnitude / 28f), 0.9f * 50f * Time.deltaTime);
         userInput.y = Mathf.Lerp(userInput.y, move.ReadValue<Vector2>()[1] + Throttle.ReadValue<float>(), 0.9f * 50f * Time.deltaTime);

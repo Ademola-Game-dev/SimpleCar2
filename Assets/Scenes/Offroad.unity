@@ -199,6 +199,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: 1.7}
@@ -224,6 +225,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1.14, y: 0.55, z: -1.7}
@@ -249,6 +251,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1.14, y: 0.55, z: -1.7}
@@ -274,6 +277,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 45
@@ -282,6 +286,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   forwards: 1
   steeringAssist: 1
+  steeringAssistStrength: 0.2
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
@@ -289,6 +294,7 @@ MonoBehaviour:
   isBraking: 0
   COMOffset: {x: 0, y: -0.2, z: 0}
   Inertia: 1.2
+  RawInput: {x: 0, y: 0}
 --- !u!65 &19599196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1185,6 +1191,80 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a7d8acda896b24eada1e2f2f517bdae7, type: 3}
+--- !u!1001 &835996897
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].engineTorque
+      value: 140
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].engineTorque
+      value: 140
+      objectReference: {fileID: 0}
+    - target: {fileID: 4275795581747793080, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: text
+      value: 
+      objectReference: {fileID: 133335533}
+    - target: {fileID: 7163484232335497947, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Name
+      value: roadster 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 433.22238
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 536.8015
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+--- !u!4 &835996898 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+  m_PrefabInstance: {fileID: 835996897}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -1292,7 +1372,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   justFollow: 1
-  target: {fileID: 2038849770}
+  target: {fileID: 835996898}
   zoomSpeed: 10
   minFOV: 20
   maxFOV: 90
@@ -1464,6 +1544,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1, y: 0.55, z: 1.7}
@@ -1489,6 +1570,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: 1, y: 0.59, z: -1.7}
@@ -1514,6 +1596,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: -1, y: 0.59, z: -1.7}
@@ -1539,6 +1622,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 90
@@ -1547,6 +1631,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   forwards: 1
   steeringAssist: 1
+  steeringAssistStrength: 0.2
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
@@ -1554,6 +1639,7 @@ MonoBehaviour:
   isBraking: 0
   COMOffset: {x: 0, y: -0.2, z: 0}
   Inertia: 1.2
+  RawInput: {x: 0, y: 0}
 --- !u!65 &1197988569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2319,7 +2405,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!54 &2038849765
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -2402,6 +2488,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: -0.78, y: 0.55, z: 1.7}
@@ -2427,6 +2514,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: 0.78, y: 0.59, z: -1.7}
@@ -2452,6 +2540,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
     localPosition: {x: -0.78, y: 0.59, z: -1.7}
@@ -2477,6 +2566,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    xSlipAngle: 0
   wheelGripX: 14
   wheelGripZ: 14
   suspensionForce: 40
@@ -2485,6 +2575,7 @@ MonoBehaviour:
   rb: {fileID: 0}
   forwards: 1
   steeringAssist: 1
+  steeringAssistStrength: 0.2
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
@@ -2492,6 +2583,7 @@ MonoBehaviour:
   isBraking: 0
   COMOffset: {x: 0, y: -0.4, z: 0}
   Inertia: 3
+  RawInput: {x: 0, y: 0}
 --- !u!65 &2038849767
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2681,3 +2773,4 @@ SceneRoots:
   - {fileID: 1855686993}
   - {fileID: 38537923}
   - {fileID: 419757072}
+  - {fileID: 835996897}
