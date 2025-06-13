@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class camera : MonoBehaviour
@@ -18,6 +19,10 @@ public class camera : MonoBehaviour
     private bool isFreeCam = false; // Toggle between free cam and follow cam
 
     private Camera cam; // Reference to the Camera component
+    Vector3 smoothPosition = Vector3.zero; // For smooth camera movement
+    Vector3 followVelocity = Vector3.zero; // Reference for SmoothDamp
+    public float followSmoothTime = 0.05f;   // how “springy” the camera feels
+    public Vector3 followOffset   = new Vector3(0, 2.2f, -7f);
 
     void Start()
     {
@@ -63,11 +68,27 @@ public class camera : MonoBehaviour
         
     }
 
+    void FixedUpdate()          // <— not LateUpdate
+    {
+        if (!justFollow) return;
+
+        Vector3 desired = target.position + target.TransformDirection(followOffset) + target.gameObject.GetComponent<Car>().rb.velocity * 0.02f;
+
+        transform.position = Vector3.SmoothDamp(
+            transform.position, desired,
+            ref followVelocity, followSmoothTime);
+
+        transform.rotation = Quaternion.Slerp(
+            transform.rotation,
+            Quaternion.LookRotation(
+                target.position + Vector3.up * 1.2f - transform.position + target.gameObject.GetComponent<Car>().rb.velocity * 0.5f),
+            Time.fixedDeltaTime * 10f);
+    }
+
     void LateUpdate()
     {
-        if (justFollow) {
-            while ((transform.position - target.position).magnitude > 7f) transform.position = Vector3.Lerp(transform.position, target.position + Vector3.up * 2.2f, 0.00002f);
-            transform.LookAt(target.position + Vector3.up * 1.2f);
+        if (justFollow)
+        {
             return;
         }
         if (isFreeCam)

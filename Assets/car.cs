@@ -273,7 +273,6 @@ public class Car : MonoBehaviour
             float s = Mathf.Clamp01(w.slip);
             w.input.x = Mathf.Lerp(w.input.x, userInput.x, Time.deltaTime * 60f);
             if (s > 0.3f && s < 1.5f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
-
             
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
