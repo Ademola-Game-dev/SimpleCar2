@@ -126,6 +126,7 @@ public class WheelProperties
     [HideInInspector] public float braking = 0;
     [HideInInspector] public float slipHistory = 0f;
     [HideInInspector] public float tcsReduction = 0f; // Traction control reduction factor
+    [HideInInspector] public float steeringReduction = 0f; // Steering control reduction factor
     [HideInInspector] public float xSlipAngle = 0f; // Slip in X direction in degrees (5 degrees for example when slightly slipping)
 }
 
@@ -194,6 +195,7 @@ public class Car : MonoBehaviour
         {
             w.tcsReduction = 0f;
             w.slipHistory = 0f;
+            w.steeringReduction = 0f;
         }
 
         rb.centerOfMass += COMOffset;
@@ -248,8 +250,8 @@ public class Car : MonoBehaviour
             // High-performance F1 traction control
             if (throttleAssist)
             {
-                float targetSlip = 0.85f; // Desired slip ratio for max traction
-                float slipTolerance = 0.05f; // Allowable deviation from target slip
+                float targetSlip = 0.91f; // Desired slip ratio for max traction
+                float slipTolerance = 0.02f; // Allowable deviation from target slip
                 if (w.slip > targetSlip + slipTolerance)
                 {
                     // If slip exceeds the upper bound, calculate how much it overshoots
@@ -267,18 +269,42 @@ public class Car : MonoBehaviour
                 // Clamp TCS reduction to [0, 1] range
                 w.tcsReduction = Mathf.Clamp01(w.tcsReduction);
             }
+            if (steeringAssist)
+            {
+                float targetSlip = 0.75f;
+                float slipTolerance = 0.02f; // Allowable deviation from target slip
+                if (w.slip > targetSlip + slipTolerance)
+                {
+                    // If slip exceeds the upper bound, calculate how much it overshoots
+                    float overshoot = w.slip - targetSlip;
+                    // Convert overshoot to a reduction factor (aggressive multiplier)
+                    float reduction = Mathf.Clamp01(overshoot * 2.0f);
+                    // Aggressively increase steering reduction to cut steering input fast
+                    w.steeringReduction = Mathf.Lerp(w.steeringReduction, 1, reduction / 5f);
+                }
+                else if (w.slip < targetSlip - slipTolerance)
+                {
+                    // If slip is below the lower bound, quickly restore steering input
+                    w.steeringReduction = Mathf.Lerp(w.steeringReduction, 0f, 0.6f * Time.deltaTime);
+                }
+                // Clamp steering reduction to [0, 1] range
+                w.steeringReduction = Mathf.Clamp01(w.steeringReduction);
+            }
             w.braking = isBraking * (1 - w.tcsReduction);
 
             // Apply steering input smoothing (steering assist or slip-based reduction can be added here if desired)
             float s = Mathf.Clamp01(w.slip);
-            w.input.x = Mathf.Lerp(w.input.x, userInput.x, Time.deltaTime * 60f);
-            if (s > 0.3f && s < 1.5f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
-            
+            w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
+            if (s > 0.9f && s < 1.5f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
+
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
             if (float.IsNaN(finalThrottle) || float.IsInfinity(finalThrottle))
                 finalThrottle = 0f;
+            if (float.IsNaN(w.steeringReduction) || float.IsInfinity(w.steeringReduction))
+                w.steeringReduction = 0f;
             w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f * Time.deltaTime * 60f);
+            
             if (float.IsNaN(w.input.y) || float.IsInfinity(w.input.y))
                 w.input.y = 0f;
         }
@@ -336,7 +362,7 @@ public class Car : MonoBehaviour
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
 
-            w.xSlipAngle = (Mathf.Atan2(w.localVelocity.x, w.localVelocity.z) * Mathf.Rad2Deg) - (w.turnAngle * w.input.x);
+            w.xSlipAngle = (Mathf.Atan2(w.localVelocity.x, w.localVelocity.z) * Mathf.Rad2Deg) - w.turnAngle * w.input.x;
 
             if (grounded)
             {

@@ -199,6 +199,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -225,6 +226,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -251,6 +253,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -277,6 +280,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   wheelGripX: 14
   wheelGripZ: 14
@@ -616,8 +620,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
-  m_fontSizeBase: 36
+  m_fontSize: 12
+  m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1380,6 +1384,8 @@ MonoBehaviour:
   rotationSpeedY: 1120
   minYAngle: -20
   maxYAngle: 80
+  followSmoothTime: 0.15
+  followOffset: {x: 0, y: 2.2, z: -7}
 --- !u!114 &963194230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1544,6 +1550,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -1570,6 +1577,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -1596,6 +1604,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -1622,6 +1631,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   wheelGripX: 14
   wheelGripZ: 14
@@ -2488,6 +2498,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -2514,6 +2525,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -2540,6 +2552,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   - skidTrail: {fileID: 0}
     skidTrailGameObject: {fileID: 0}
@@ -2566,6 +2579,7 @@ MonoBehaviour:
     braking: 0
     slipHistory: 0
     tcsReduction: 0
+    steeringReduction: 0
     xSlipAngle: 0
   wheelGripX: 14
   wheelGripZ: 14

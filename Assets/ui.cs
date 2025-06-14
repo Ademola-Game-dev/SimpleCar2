@@ -77,6 +77,12 @@ public class ui : MonoBehaviour
             tcsFactor += car.wheels[i].tcsReduction.ToString("F2") + " ";
         }
 
+        string steeringReduction = "Steering: ";
+        for (int i = 0; i < car.wheels.Length; i++)
+        {
+            steeringReduction += car.wheels[i].steeringReduction.ToString("F2") + " ";
+        }
+
         string xSlipAngles = "";
         for (int i = 0; i < car.wheels.Length; i++)
         {
@@ -89,6 +95,7 @@ public class ui : MonoBehaviour
                     rpmText + "\n" +
                     wheelStates +
                     "\n" + tcsFactor +
-                    "\n" + xSlipAngles;
+                    "\n" + xSlipAngles +
+                    "\n" + steeringReduction;
     }
 }
