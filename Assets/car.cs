@@ -285,7 +285,7 @@ public class Car : MonoBehaviour
                 else if (w.slip < targetSlip - slipTolerance)
                 {
                     // If slip is below the lower bound, quickly restore steering input
-                    w.steeringReduction = Mathf.Lerp(w.steeringReduction, 0f, 0.6f * Time.deltaTime);
+                    w.steeringReduction = Mathf.Lerp(w.steeringReduction, 0f, 6f * Time.deltaTime);
                 }
                 // Clamp steering reduction to [0, 1] range
                 w.steeringReduction = Mathf.Clamp01(w.steeringReduction);
@@ -295,7 +295,11 @@ public class Car : MonoBehaviour
             // Apply steering input smoothing (steering assist or slip-based reduction can be added here if desired)
             float s = Mathf.Clamp01(w.slip);
             w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
-            if (s > 0.9f && s < 1.5f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
+            if (s > 0.9f && steeringAssist)
+            {
+                // w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
+                w.input.x = userInput.x;
+            }
 
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
@@ -303,7 +307,11 @@ public class Car : MonoBehaviour
                 finalThrottle = 0f;
             if (float.IsNaN(w.steeringReduction) || float.IsInfinity(w.steeringReduction))
                 w.steeringReduction = 0f;
-            w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f * Time.deltaTime * 60f);
+
+            if (throttleAssist)
+            {
+                w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f * Time.deltaTime * 60f);
+            } else w.input.y = userInput.y;
             
             if (float.IsNaN(w.input.y) || float.IsInfinity(w.input.y))
                 w.input.y = 0f;
