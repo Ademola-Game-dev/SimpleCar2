@@ -132,6 +132,7 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public Vector3 centerOfDownforce = new Vector3(0, 0, 0);
     public InputActions input;
     public Engine e;
     public GameObject skidMarkPrefab;
@@ -150,8 +151,6 @@ public class Car : MonoBehaviour
 
     // Assists
     public bool steeringAssist = true;
-    // slider 0-1 for steering assist strength
-    [Range(0f, 1f)] public float steeringAssistStrength = 0.2f; // Strength of steering assist
     public bool throttleAssist = true;
     public bool brakeAssist = true;
     [HideInInspector] public Vector2 userInput = Vector2.zero;
@@ -164,6 +163,7 @@ public class Car : MonoBehaviour
     private InputAction move;
     private InputAction Throttle;
     private InputAction Steer;
+    public float carSpeedFactor = 0.03f;
 
     void Start()
     {
@@ -235,8 +235,8 @@ public class Car : MonoBehaviour
         }
 
         // Get player input for reference
-        userInput.x = Mathf.Lerp(userInput.x, (move.ReadValue<Vector2>()[0] + Steer.ReadValue<float>()) / (1 + rb.velocity.magnitude / 28f), 0.9f * 50f * Time.deltaTime);
-        userInput.y = Mathf.Lerp(userInput.y, move.ReadValue<Vector2>()[1] + Throttle.ReadValue<float>(), 0.9f * 50f * Time.deltaTime);
+        userInput.x = Mathf.Lerp(userInput.x, (move.ReadValue<Vector2>()[0] + Steer.ReadValue<float>()) / (1 + rb.velocity.magnitude * carSpeedFactor), 50f * Time.deltaTime);
+        userInput.y = Mathf.Lerp(userInput.y, move.ReadValue<Vector2>()[1] + Throttle.ReadValue<float>(), 50f * Time.deltaTime);
         isBraking = userInput.y < 0 && forwards ? Mathf.Abs(userInput.y) : 0f;
 
         for (int i = 0; i < wheels.Length; i++)
@@ -292,14 +292,8 @@ public class Car : MonoBehaviour
             }
             w.braking = isBraking * (1 - w.tcsReduction);
 
-            // Apply steering input smoothing (steering assist or slip-based reduction can be added here if desired)
-            float s = Mathf.Clamp01(w.slip);
             w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
-            if (s > 0.9f && steeringAssist)
-            {
-                // w.input.x = Mathf.Lerp(w.input.x, Mathf.Clamp(w.xSlipAngle, -Mathf.Abs(w.turnAngle), Mathf.Abs(w.turnAngle)), s * Time.deltaTime * steeringAssistStrength);
-                w.input.x = userInput.x;
-            }
+            if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Clamp(w.xSlipAngle / w.turnAngle, -1f, 1f);
 
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
@@ -325,7 +319,9 @@ public class Car : MonoBehaviour
 
     void FixedUpdate()
     {
-        rb.AddForce(-transform.up * rb.velocity.magnitude * downforce);
+        rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * downforce / 28f, transform.position + transform.TransformDirection(centerOfDownforce), ForceMode.Acceleration);
+
+        rb.AddForceAtPosition(-0.9f * transform.right * transform.InverseTransformDirection(rb.velocity).x, transform.position + transform.TransformDirection(new Vector3(0, 0, -1.5f)), ForceMode.Acceleration);
         float averageWheelAngularVelocity = 0f;
         foreach (var w in wheels)
         {
@@ -370,7 +366,37 @@ public class Car : MonoBehaviour
             Vector3 totalWorldForce = wheelObj.TransformDirection(totalLocalForce);
             w.worldSlipDirection = totalWorldForce;
 
-            w.xSlipAngle = (Mathf.Atan2(w.localVelocity.x, w.localVelocity.z) * Mathf.Rad2Deg) - w.turnAngle * w.input.x;
+            // w.xSlipAngle = (Mathf.Atan2(w.localVelocity.x, w.localVelocity.z) * Mathf.Rad2Deg) - w.turnAngle * w.input.x;
+            // Calculate the wheel's actual heading direction in local space
+            // Keep your original slip angle calculation but add safety check:
+
+
+
+            if (w.localVelocity.magnitude > 0.5f) // Only calculate when moving
+            {
+                // Calculate the velocity angle
+                float velocityAngle = Mathf.Atan2(w.localVelocity.x, w.localVelocity.z) * Mathf.Rad2Deg;
+                
+                // Current wheel steering angle
+                float currentWheelAngle = w.turnAngle * w.input.x;
+                
+                // Slip angle is the difference between where we're going vs where we're pointed
+                float rawSlipAngle = velocityAngle - currentWheelAngle;
+                
+                // Normalize angle to [-180, 180] range
+                while (rawSlipAngle > 180f) rawSlipAngle -= 360f;
+                while (rawSlipAngle < -180f) rawSlipAngle += 360f;
+                
+                // Apply some smoothing to reduce jitter
+                w.xSlipAngle = Mathf.Lerp(w.xSlipAngle, rawSlipAngle, Time.fixedDeltaTime * 10f);
+            }
+            else
+            {
+                w.xSlipAngle = Mathf.Lerp(w.xSlipAngle, 0f, Time.fixedDeltaTime * 5f);
+            }
+
+
+
 
             if (grounded)
             {
@@ -451,15 +477,13 @@ public class Car : MonoBehaviour
                     w.skidTrail = null;
                 }
             }
-
-            averageWheelAngularVelocity /= wheels.Length;
-            e.SetRPM(averageWheelAngularVelocity);
-
             wheelVisual.Rotate(
                 Vector3.right,
                 w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime,
                 Space.Self
             );
         }
+        averageWheelAngularVelocity /= wheels.Length;
+        e.SetRPM(averageWheelAngularVelocity);
     }
 }
