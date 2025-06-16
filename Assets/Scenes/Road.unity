@@ -155,6 +155,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  steerAssistTarget: 0.75
+  coefFrictionMultiplier: 1
   centerOfDownforce: {x: 0, y: 0, z: 0}
   e:
     idleRPM: 2400
@@ -1396,11 +1398,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: Inertia
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: downforce
-      value: 1.6
+      value: 2.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheelGripX
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheelGripZ
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: COMOffset.y
+      value: -0.52
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: COMOffset.z
@@ -1427,24 +1441,48 @@ PrefabInstance:
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: steerAssistTarget
+      value: 0.95
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: centerOfDownforce.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: coefFrictionMultiplier
+      value: 1.8
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: steeringAssistStrength
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].mass
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].size
       value: 0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].mass
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].size
       value: 0.38
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[2].mass
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].size
       value: 0.38
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[3].mass
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].size
@@ -1468,11 +1506,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].engineTorque
-      value: 0
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].engineTorque
-      value: 0
+      value: 250
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].engineTorque
@@ -11580,6 +11618,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  steerAssistTarget: 0.75
+  coefFrictionMultiplier: 1
   centerOfDownforce: {x: 0, y: 0, z: 0}
   e:
     idleRPM: 2400
@@ -11975,12 +12015,16 @@ PrefabInstance:
       value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: COMOffset.y
+      value: -0.74
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: COMOffset.z
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: brakeAssist
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: carSpeedFactor
@@ -11988,19 +12032,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: steeringAssist
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: throttleAssist
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: e.finalDriveRatio
       value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: steerAssistTarget
+      value: 0.91
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: coefFrictionMultiplier
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: steeringAssistStrength
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].mass
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].mass
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[2].mass
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[3].mass
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].turnAngle
@@ -12020,19 +12088,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].engineTorque
-      value: 60
+      value: 230
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].engineTorque
-      value: 60
+      value: 230
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].engineTorque
-      value: 60
+      value: 230
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].engineTorque
-      value: 60
+      value: 230
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].brakeStrength

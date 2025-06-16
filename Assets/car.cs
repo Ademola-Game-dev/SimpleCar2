@@ -132,6 +132,8 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public float steerAssistTarget = 0.75f; // Target slip ratio for steering assist
+    public float coefFrictionMultiplier = 1.0f; // Multiplier for friction coefficient
     public Vector3 centerOfDownforce = new Vector3(0, 0, 0);
     public InputActions input;
     public Engine e;
@@ -271,7 +273,7 @@ public class Car : MonoBehaviour
             }
             if (steeringAssist)
             {
-                float targetSlip = 0.75f;
+                float targetSlip = steerAssistTarget;
                 float slipTolerance = 0.02f; // Allowable deviation from target slip
                 if (w.slip > targetSlip + slipTolerance)
                 {
@@ -293,7 +295,8 @@ public class Car : MonoBehaviour
             w.braking = isBraking * (1 - w.tcsReduction);
 
             w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
-            if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Clamp(w.xSlipAngle / w.turnAngle, -1f, 1f);
+            // if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Clamp(w.xSlipAngle / w.turnAngle, -1f, 1f);
+            if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, w.xSlipAngle / w.turnAngle, Time.deltaTime);
 
             // Apply throttle with TCS - more responsive for F1
             float finalThrottle = userInput.y * (1f - w.tcsReduction);
@@ -355,8 +358,8 @@ public class Car : MonoBehaviour
             }
 
             Vector3 totalLocalForce = new Vector3(lateralFriction, 0f, longitudinalFriction)
-                * w.normalForce * coefStaticFriction * Time.fixedDeltaTime;
-            float currentMaxFrictionForce = w.normalForce * coefStaticFriction;
+                * w.normalForce * coefStaticFriction * coefFrictionMultiplier * Time.fixedDeltaTime;
+            float currentMaxFrictionForce = w.normalForce * coefStaticFriction * coefFrictionMultiplier;
 
             w.slidding = totalLocalForce.magnitude > currentMaxFrictionForce;
             w.slip = totalLocalForce.magnitude / currentMaxFrictionForce;
