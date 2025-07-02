@@ -11,6 +11,7 @@ using UnityEngine.InputSystem;
 [Serializable]
 public class Engine
 {
+    public bool constantTorque = false; // Constant torque, e.g. for electric motors or vehicles
     public float idleRPM = 2400f;
     public float maxRPM = 7000f;
     public float[] gearRatios = { 3.50f, 2.80f, 2.30f, 1.90f, 1.60f, 1.30f, 1.00f, 0.85f };
@@ -30,6 +31,8 @@ public class Engine
     }
     public float GetCurrentPower(MonoBehaviour context) // 0-1 based on RPM
     {
+        if (constantTorque) return 1;
+        if (rpm >= maxRPM) return 0f; // No power if RPM exceeds max
         if (switchingGears) return 0.3f; // Less power during gear switch
         return Mathf.Clamp01(rpm / maxRPM);
     }
@@ -139,8 +142,8 @@ public class Car : MonoBehaviour
     public Engine e;
     public GameObject skidMarkPrefab;
     public float smoothTurn = 0.03f;
-    float coefStaticFriction = 1.95f;
-    float coefKineticFriction = 0.95f;
+    float coefStaticFriction = 0.95f;
+    float coefKineticFriction = 0.35f;
     public GameObject wheelPrefab;
     public WheelProperties[] wheels;
     public float wheelGripX = 8f;

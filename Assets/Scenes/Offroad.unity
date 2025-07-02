@@ -1207,6 +1207,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: COMOffset.y
+      value: -0.52
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: coefFrictionMultiplier
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].engineTorque
       value: 140
       objectReference: {fileID: 0}
@@ -1218,6 +1226,10 @@ PrefabInstance:
       propertyPath: text
       value: 
       objectReference: {fileID: 133335533}
+    - target: {fileID: 5671832311245031864, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Drag
+      value: 0.13
+      objectReference: {fileID: 0}
     - target: {fileID: 7163484232335497947, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_Name
       value: roadster 1
