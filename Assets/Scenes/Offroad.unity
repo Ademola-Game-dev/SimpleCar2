@@ -156,6 +156,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  steerAssistTarget: 0.75
+  coefFrictionMultiplier: 1
+  centerOfDownforce: {x: 0, y: 0, z: 0}
   e:
     idleRPM: 2400
     maxRPM: 7000
@@ -290,7 +293,6 @@ MonoBehaviour:
   rb: {fileID: 0}
   forwards: 1
   steeringAssist: 1
-  steeringAssistStrength: 0.2
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
@@ -299,6 +301,7 @@ MonoBehaviour:
   COMOffset: {x: 0, y: -0.2, z: 0}
   Inertia: 1.2
   RawInput: {x: 0, y: 0}
+  carSpeedFactor: 0.03
 --- !u!65 &19599196
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1507,6 +1510,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  steerAssistTarget: 0.75
+  coefFrictionMultiplier: 1
+  centerOfDownforce: {x: 0, y: 0, z: 0}
   e:
     idleRPM: 2400
     maxRPM: 7000
@@ -1641,7 +1647,6 @@ MonoBehaviour:
   rb: {fileID: 0}
   forwards: 1
   steeringAssist: 1
-  steeringAssistStrength: 0.2
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
@@ -1650,6 +1655,7 @@ MonoBehaviour:
   COMOffset: {x: 0, y: -0.2, z: 0}
   Inertia: 1.2
   RawInput: {x: 0, y: 0}
+  carSpeedFactor: 0.03
 --- !u!65 &1197988569
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2455,6 +2461,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  steerAssistTarget: 0.75
+  coefFrictionMultiplier: 1
+  centerOfDownforce: {x: 0, y: 0, z: 0}
   e:
     idleRPM: 2400
     maxRPM: 7000
@@ -2589,7 +2598,6 @@ MonoBehaviour:
   rb: {fileID: 0}
   forwards: 1
   steeringAssist: 1
-  steeringAssistStrength: 0.2
   throttleAssist: 1
   brakeAssist: 1
   userInput: {x: 0, y: 0}
@@ -2598,6 +2606,7 @@ MonoBehaviour:
   COMOffset: {x: 0, y: -0.4, z: 0}
   Inertia: 3
   RawInput: {x: 0, y: 0}
+  carSpeedFactor: 0.03
 --- !u!65 &2038849767
 BoxCollider:
   m_ObjectHideFlags: 0

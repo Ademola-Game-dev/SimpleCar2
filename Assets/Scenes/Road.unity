@@ -12055,6 +12055,10 @@ PrefabInstance:
       value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: e.automaticTransmission
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].mass
       value: 0.4
       objectReference: {fileID: 0}
@@ -12088,19 +12092,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].engineTorque
-      value: 230
+      value: 160
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].engineTorque
-      value: 230
+      value: 160
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].engineTorque
-      value: 230
+      value: 160
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].engineTorque
-      value: 230
+      value: 160
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].brakeStrength
