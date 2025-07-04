@@ -135,6 +135,7 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public float restoreStrength = 1f; // Strength of restoring force when sliding
     public float steerAssistTarget = 0.75f; // Target slip ratio for steering assist
     public float coefFrictionMultiplier = 1.0f; // Multiplier for friction coefficient
     public Vector3 centerOfDownforce = new Vector3(0, 0, 0);
@@ -327,7 +328,7 @@ public class Car : MonoBehaviour
     {
         rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * downforce / 28f, transform.position + transform.TransformDirection(centerOfDownforce), ForceMode.Acceleration);
 
-        rb.AddForceAtPosition(-0.9f * transform.right * transform.InverseTransformDirection(rb.velocity).x, transform.position + transform.TransformDirection(new Vector3(0, 0, -1.5f)), ForceMode.Acceleration);
+        rb.AddForceAtPosition(-0.9f * transform.right * transform.InverseTransformDirection(rb.velocity).x, transform.position + transform.TransformDirection(new Vector3(0, 0, -1.5f * restoreStrength)), ForceMode.Acceleration);
         float averageWheelAngularVelocity = 0f;
         foreach (var w in wheels)
         {

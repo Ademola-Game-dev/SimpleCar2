@@ -3,6 +3,11 @@ using UnityEngine;
 
 public class camera : MonoBehaviour
 {
+    [Header("Input Settings")]
+    public InputActions input;
+    public Vector2 cameraInput = Vector2.zero;
+
+
     public bool justFollow = true;
     public Transform target; // The target GameObject to follow
     public float zoomSpeed = 10.0f; // Speed of zooming in/out
@@ -23,6 +28,32 @@ public class camera : MonoBehaviour
     Vector3 followVelocity = Vector3.zero; // Reference for SmoothDamp
     public float followSmoothTime = 0.05f;   // how “springy” the camera feels
     public Vector3 followOffset   = new Vector3(0, 2.2f, -7f);
+
+    void Awake()
+    {
+        // Initialize the input actions - exactly like your car script
+        input = new InputActions();
+    }
+
+    private void OnEnable()
+    {
+        // Enable camera input - following your car script pattern
+        var camera = input.Move.Camera;
+        camera.Enable();
+    }
+
+    private void OnDisable()
+    {
+        // Disable camera input
+        var camera = input.Move.Camera;
+        camera.Disable();
+
+        // Show the cursor again when the script is disabled
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+
 
     void Start()
     {
@@ -50,6 +81,8 @@ public class camera : MonoBehaviour
 
     void Update()
     {
+        cameraInput = input.Move.Camera.ReadValue<Vector2>();
+
         // Toggle between free cam and follow cam on pressing 'C'
         if (Input.GetKeyDown(KeyCode.C))
         {
@@ -70,9 +103,10 @@ public class camera : MonoBehaviour
 
     void FixedUpdate()          // <— not LateUpdate
     {
+        cameraInput = cameraInput.magnitude > 0.3f ? cameraInput.normalized : Vector2.zero;
         if (!justFollow) return;
 
-        Vector3 desired = target.position + target.TransformDirection(followOffset) + target.gameObject.GetComponent<Car>().rb.velocity * 0.02f;
+        Vector3 desired = target.position + target.TransformDirection(new Vector3(followOffset.z * cameraInput.x, followOffset.y, followOffset.z * (cameraInput.y == 0 ? 1 : cameraInput.y)));
 
         transform.position = Vector3.SmoothDamp(
             transform.position, desired,
@@ -81,7 +115,7 @@ public class camera : MonoBehaviour
         transform.rotation = Quaternion.Slerp(
             transform.rotation,
             Quaternion.LookRotation(
-                target.position + Vector3.up * 1.2f - transform.position + target.gameObject.GetComponent<Car>().rb.velocity * 0.5f),
+                target.position + Vector3.up * 1.2f - transform.position),
             Time.fixedDeltaTime * 10f);
     }
 
@@ -137,12 +171,5 @@ public class camera : MonoBehaviour
         // Update the camera's position and rotation
         transform.position = desiredPosition;
         transform.LookAt(target.position);
-    }
-
-    void OnDisable()
-    {
-        // Show the cursor again when the script is disabled
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
     }
 }

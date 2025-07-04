@@ -155,6 +155,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  restoreStrength: 1
   steerAssistTarget: 0.75
   coefFrictionMultiplier: 1
   centerOfDownforce: {x: 0, y: 0, z: 0}
@@ -5501,8 +5502,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 551396fa0535c4538bee6bb7e7a274bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraInput: {x: 0, y: 0}
   justFollow: 1
-  target: {fileID: 1110475136}
+  target: {fileID: 2050993173}
   zoomSpeed: 10
   minFOV: 20
   maxFOV: 90
@@ -7030,7 +7032,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7163484232335497947, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_LocalPosition.x
@@ -12003,6 +12005,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bb2e49e824e646b491cfdb630817e0d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  restoreStrength: 1
   steerAssistTarget: 0.75
   coefFrictionMultiplier: 1
   centerOfDownforce: {x: 0, y: 0, z: 0}
@@ -12405,6 +12408,18 @@ PrefabInstance:
       value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: dampAmount
+      value: 1.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheelGripX
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheelGripZ
+      value: 14
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: COMOffset.y
       value: -0.74
       objectReference: {fileID: 0}
@@ -12427,6 +12442,14 @@ PrefabInstance:
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: throttleAssist
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: restoreStrength
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: suspensionForce
+      value: 55
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: e.finalDriveRatio
@@ -12454,19 +12477,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].mass
-      value: 16
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].mass
-      value: 16
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].mass
-      value: 16
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].mass
-      value: 16
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: e.gearRatios.Array.data[1]
@@ -12518,11 +12541,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].engineTorque
-      value: 160
+      value: 600
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].engineTorque
-      value: 160
+      value: 600
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].brakeStrength
@@ -12539,6 +12562,22 @@ PrefabInstance:
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].brakeStrength
       value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].localPosition.y
+      value: 0.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].localPosition.y
+      value: 0.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[2].localPosition.y
+      value: 0.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[3].localPosition.y
+      value: 0.63
       objectReference: {fileID: 0}
     - target: {fileID: 3150249541015369503, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_IsActive
@@ -12610,7 +12649,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7163484232335497947, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_LocalPosition.x
