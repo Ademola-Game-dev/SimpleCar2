@@ -81,6 +81,7 @@ public class camera : MonoBehaviour
 
     void Update()
     {
+
         cameraInput = input.Move.Camera.ReadValue<Vector2>();
 
         // Toggle between free cam and follow cam on pressing 'C'
@@ -101,12 +102,12 @@ public class camera : MonoBehaviour
         
     }
 
-    void FixedUpdate()          // <— not LateUpdate
+    void FixedUpdate()
     {
         cameraInput = cameraInput.magnitude > 0.3f ? cameraInput.normalized : Vector2.zero;
         if (!justFollow) return;
 
-        Vector3 desired = target.position + target.TransformDirection(new Vector3(followOffset.z * cameraInput.x, followOffset.y, followOffset.z * (cameraInput.y == 0 ? 1 : cameraInput.y)));
+        Vector3 desired = target.position + target.TransformDirection(new Vector3(followOffset.z * cameraInput.x, followOffset.y, followOffset.z * (cameraInput.y == 0 ? 1 : -cameraInput.y)));
 
         transform.position = Vector3.SmoothDamp(
             transform.position, desired,

@@ -12,14 +12,15 @@ using UnityEngine.InputSystem;
 public class Engine
 {
     public bool constantTorque = false; // Constant torque, e.g. for electric motors or vehicles
-    public float idleRPM = 2400f;
-    public float maxRPM = 7000f;
-    public float[] gearRatios = { 3.50f, 2.80f, 2.30f, 1.90f, 1.60f, 1.30f, 1.00f, 0.85f };
-    public float finalDriveRatio = 4.0f;
+    public float idleRPM = 800f; // Koenigsegg idle RPM
+    public float maxRPM = 8500f; // Koenigsegg redline (Jesko/modern engines)
+    public float peakPowerRPM = 7800f; // Where peak power occurs
+    public float[] gearRatios = { 3.31f, 2.27f, 1.69f, 1.32f, 1.02f, 0.82f, 0.67f, 0.56f, 0.46f }; // 9-speed LST ratios (estimated)
+    public float finalDriveRatio = 3.73f; // Estimated for Koenigsegg
     private int currentGear = 0;
     public bool automaticTransmission = true;
     private bool switchingGears = false;
-    private float gearChangeTime = 0.18f; //seconds to switch gears
+    private float gearChangeTime = 0.02f; // Light Speed Transmission is incredibly fast
     private float rpm = 0f;
     public void SetRPM(float averageWheelAngularVelocity)
     {
@@ -29,12 +30,29 @@ public class Engine
         float targetRPM = Mathf.Max(idleRPM, transmissionRPM);
         this.rpm = Mathf.Clamp(targetRPM, idleRPM, maxRPM);
     }
+    // Enhanced power curve for Koenigsegg engine
     public float GetCurrentPower(MonoBehaviour context) // 0-1 based on RPM
     {
         if (constantTorque) return 1;
         if (rpm >= maxRPM) return 0f; // No power if RPM exceeds max
-        if (switchingGears) return 0.3f; // Less power during gear switch
-        return Mathf.Clamp01(rpm / maxRPM);
+        if (switchingGears) return 0.7f; // Less power reduction due to fast shifts
+        
+        // Realistic power curve - peak power at 7800 RPM
+        float normalizedRPM = rpm / maxRPM;
+        
+        if (rpm < idleRPM) return 0f;
+        if (rpm < peakPowerRPM)
+        {
+            // Power builds up to peak
+            float t = (rpm - idleRPM) / (peakPowerRPM - idleRPM);
+            return Mathf.Lerp(0.3f, 1.0f, t * t); // Quadratic curve for realistic torque
+        }
+        else
+        {
+            // Power drops off after peak
+            float t = (rpm - peakPowerRPM) / (maxRPM - peakPowerRPM);
+            return Mathf.Lerp(1.0f, 0.1f, t);
+        }
     }
     public float AngularVelocityToRPM(float angularVelocity)
     {
@@ -74,16 +92,18 @@ public class Engine
         return currentGear + 1; // Return 1-based gear number
     }
 
+    // Enhanced gear shifting logic for Koenigsegg
     public void checkGearSwitching(MonoBehaviour context)
     {
         if (switchingGears) return;
 
-        // Check if the RPM is too high or too low for the current gear
+        // Shift up at 95% of redline
         if (rpm > maxRPM * 0.95f && currentGear < gearRatios.Length - 1)
         {
             UpGear(context);
         }
-        else if (rpm < maxRPM * 0.6f && currentGear > 0)
+        // Shift down if RPM drops below 40% of redline to stay in power band
+        else if (rpm < maxRPM * 0.4f && currentGear > 0)
         {
             DownGear(context);
         }
@@ -96,6 +116,11 @@ public class Engine
     public bool isSwitchingGears()
     {
         return switchingGears;
+    }
+
+    public float GetCurrentTotalGearRatio()
+    {
+        return gearRatios[currentGear] * finalDriveRatio;
     }
 }
 
@@ -139,6 +164,14 @@ public class Car : MonoBehaviour
     public float steerAssistTarget = 0.75f; // Target slip ratio for steering assist
     public float coefFrictionMultiplier = 1.0f; // Multiplier for friction coefficient
     public Vector3 centerOfDownforce = new Vector3(0, 0, 0);
+    
+    [Header("Aerodynamics")]
+    public float dragCoefficient = 0.278f; // Jesko Absolut value
+    public float frontalArea = 1.88f; // m² - Jesko Absolut frontal area
+    public float airDensity = 1.225f; // kg/m³ at sea level, 15°C
+    public float lowSpeedDragCoefficient = 0.37f; // Higher drag at low speeds
+    public float rollingResistanceCoeff = 0.015f; // Typical for performance tires
+    // public GameObject adaptiveBrakingWing;
     public InputActions input;
     public Engine e;
     public GameObject skidMarkPrefab;
@@ -324,8 +357,32 @@ public class Car : MonoBehaviour
         e.checkGearSwitching(this);
     }
 
+    // Add this method to calculate aerodynamic drag
+    private void ApplyAerodynamicDrag()
+    {
+        Vector3 velocity = rb.velocity;
+        float speed = velocity.magnitude;
+        float speedKmh = speed * 3.6f; // Convert m/s to km/h
+        
+        // Calculate current drag coefficient based on speed (adaptive aero)
+        float currentDragCoeff = dragCoefficient;
+        // Drag force formula: F = 0.5 * ρ * v² * Cd * A
+        float dragMagnitude = 0.5f * airDensity * speed * speed * currentDragCoeff * frontalArea;
+        
+        // Apply drag force opposite to velocity direction
+        Vector3 dragForce = -velocity.normalized * dragMagnitude;
+        
+        // Apply the drag force
+        rb.AddForce(dragForce / 200f, ForceMode.Force);
+    }
+
+
+
     void FixedUpdate()
     {
+        // Apply aerodynamic drag calculation
+        ApplyAerodynamicDrag();
+        
         rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * downforce / 28f, transform.position + transform.TransformDirection(centerOfDownforce), ForceMode.Acceleration);
 
         rb.AddForceAtPosition(-0.9f * transform.right * transform.InverseTransformDirection(rb.velocity).x, transform.position + transform.TransformDirection(new Vector3(0, 0, -1.5f * restoreStrength)), ForceMode.Acceleration);
@@ -342,7 +399,8 @@ public class Car : MonoBehaviour
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
             w.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
             forwards = w.localVelocity.z > 0.1f;
-            w.torque = w.engineTorque * w.input.y * e.GetCurrentPower(this);
+            w.torque = w.engineTorque * w.input.y * e.GetCurrentPower(this) * e.GetCurrentTotalGearRatio();
+            Debug.Log(w.torque + " is the torque on wheel " + w.wheelObject.name);
 
             float inertia = w.mass * w.size * w.size / 2f;
             float lateralVel = w.localVelocity.x;
@@ -354,7 +412,19 @@ public class Car : MonoBehaviour
             float lateralFriction = -wheelGripX * lateralVel - 2f * lateralHitVel;
             float longitudinalFriction = -wheelGripZ * (w.localVelocity.z - w.angularVelocity * w.size);
 
+            // Calculate rolling resistance torque (applied per wheel)
+            float rollingResistanceTorque = 0f;
+            if (grounded)
+            {
+                // Rolling resistance is proportional to normal force on this wheel
+                float rollingResistanceForce = this.rollingResistanceCoeff * w.normalForce;
+                rollingResistanceTorque = rollingResistanceForce * w.size;
+                // Apply opposing torque based on wheel rotation direction
+                rollingResistanceTorque *= -Mathf.Sign(w.angularVelocity);
+            }
+
             w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
+            w.angularVelocity += rollingResistanceTorque / inertia * Time.fixedDeltaTime;
             w.angularVelocity *= 1 - w.braking * w.brakeStrength * Time.fixedDeltaTime;
             if (Input.GetKey(KeyCode.Space)) // Handbrake
             {
