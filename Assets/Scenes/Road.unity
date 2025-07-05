@@ -13453,6 +13453,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 261549548307686322, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Size.y
+      value: 0.56440026
+      objectReference: {fileID: 0}
+    - target: {fileID: 261549548307686322, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Size.z
+      value: 4.299659
+      objectReference: {fileID: 0}
+    - target: {fileID: 261549548307686322, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Center.y
+      value: 0.16438845
+      objectReference: {fileID: 0}
+    - target: {fileID: 261549548307686322, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Center.z
+      value: 0.05531037
+      objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: Inertia
       value: 2
@@ -13471,7 +13487,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: dampAmount
-      value: 1.5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheelGripX
@@ -13483,11 +13499,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: COMOffset.y
-      value: -0.74
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: COMOffset.z
-      value: 0.1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: brakeAssist
@@ -13511,7 +13527,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: suspensionForce
-      value: 140
+      value: 105
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: brakingWingAngle
@@ -13550,16 +13566,32 @@ PrefabInstance:
       value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].size
+      value: 0.39
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].mass
       value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].size
+      value: 0.39
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].mass
       value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[2].size
+      value: 0.39
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].mass
       value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[3].size
+      value: 0.39
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: e.gearRatios.Array.data[0]
@@ -13646,20 +13678,52 @@ PrefabInstance:
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].localPosition.x
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[0].localPosition.y
-      value: 0.59
+      value: 0.472
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[0].localPosition.z
+      value: 1.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].localPosition.x
+      value: -0.8
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[1].localPosition.y
-      value: 0.59
+      value: 0.472
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[1].localPosition.z
+      value: 1.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[2].localPosition.x
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[2].localPosition.y
-      value: 0.61
+      value: 0.488
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[2].localPosition.z
+      value: -1.36
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[3].localPosition.x
+      value: -0.8
       objectReference: {fileID: 0}
     - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: wheels.Array.data[3].localPosition.y
-      value: 0.61
+      value: 0.488
+      objectReference: {fileID: 0}
+    - target: {fileID: 2216765042893925977, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: wheels.Array.data[3].localPosition.z
+      value: -1.36
       objectReference: {fileID: 0}
     - target: {fileID: 3150249541015369503, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_IsActive
@@ -13772,6 +13836,22 @@ PrefabInstance:
     - target: {fileID: 7173669045434094285, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955854512646495888, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Size.y
+      value: 0.8177758
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955854512646495888, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Size.z
+      value: 3.1710272
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955854512646495888, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Center.y
+      value: 0.41868368
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955854512646495888, guid: 6ce8799ea28ef40ada5b692bf1172505, type: 3}
+      propertyPath: m_Center.z
+      value: -0.2896924
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -28046,7 +28126,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -0.291, z: 0.074}
-  m_LocalScale: {x: 125, y: 125, z: 125}
+  m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 864556786309446475}
