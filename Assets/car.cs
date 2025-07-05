@@ -509,7 +509,7 @@ public class Car : MonoBehaviour
                         skidTrailObj.transform.SetParent(w.wheelObject.transform);
                         skidTrailObj.transform.localPosition = Vector3.zero;
                         w.skidTrail = skidTrailObj.GetComponent<TrailRenderer>();
-                        w.skidTrail.time = 3f;
+                        w.skidTrail.time = 30f;
                         w.skidTrail.autodestruct = true;
                         w.skidTrail.emitting = false; // Start with emitting disabled
                         w.skidTrail.transform.position = hit.point;
