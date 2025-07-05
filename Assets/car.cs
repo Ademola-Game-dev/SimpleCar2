@@ -171,7 +171,10 @@ public class Car : MonoBehaviour
     public float airDensity = 1.225f; // kg/m³ at sea level, 15°C
     public float lowSpeedDragCoefficient = 0.37f; // Higher drag at low speeds
     public float rollingResistanceCoeff = 0.015f; // Typical for performance tires
-    // public GameObject adaptiveBrakingWing;
+    public GameObject adaptiveBrakingWing;
+    public float brakingWingAngle = 60f; // Degrees to tip forward when braking
+    public float brakingWingSpeed = 8f; // Speed of wing animation
+    [HideInInspector] public float currentWingAngle = 0f;
     public InputActions input;
     public Engine e;
     public GameObject skidMarkPrefab;
@@ -278,6 +281,15 @@ public class Car : MonoBehaviour
         userInput.y = Mathf.Lerp(userInput.y, move.ReadValue<Vector2>()[1] + Throttle.ReadValue<float>(), 50f * Time.deltaTime);
         isBraking = userInput.y < 0 && forwards ? Mathf.Abs(userInput.y) : 0f;
 
+        // Adaptive braking wing animation
+        if (adaptiveBrakingWing != null) {
+            float targetAngle = isBraking > 0.15f ? brakingWingAngle : 0f;
+            currentWingAngle = Mathf.Lerp(currentWingAngle, targetAngle, brakingWingSpeed * Time.deltaTime);
+            
+            // Rotate wing forward (negative X rotation tips forward)
+            adaptiveBrakingWing.transform.localRotation = Quaternion.Euler(currentWingAngle, 0, 0);
+        }
+
         for (int i = 0; i < wheels.Length; i++)
         {
             var w = wheels[i];
@@ -365,7 +377,7 @@ public class Car : MonoBehaviour
         float speedKmh = speed * 3.6f; // Convert m/s to km/h
         
         // Calculate current drag coefficient based on speed (adaptive aero)
-        float currentDragCoeff = dragCoefficient;
+        float currentDragCoeff = dragCoefficient * (isBraking > 0.3f ? (adaptiveBrakingWing != null ? 2f : 1f) : 1f);
         // Drag force formula: F = 0.5 * ρ * v² * Cd * A
         float dragMagnitude = 0.5f * airDensity * speed * speed * currentDragCoeff * frontalArea;
         
@@ -423,8 +435,7 @@ public class Car : MonoBehaviour
                 rollingResistanceTorque *= -Mathf.Sign(w.angularVelocity);
             }
 
-            w.angularVelocity += (w.torque - longitudinalFriction * w.size) / inertia * Time.fixedDeltaTime;
-            w.angularVelocity += rollingResistanceTorque / inertia * Time.fixedDeltaTime;
+            w.angularVelocity += (w.torque - longitudinalFriction * w.size - rollingResistanceTorque) / inertia * Time.fixedDeltaTime;
             w.angularVelocity *= 1 - w.braking * w.brakeStrength * Time.fixedDeltaTime;
             if (Input.GetKey(KeyCode.Space)) // Handbrake
             {
