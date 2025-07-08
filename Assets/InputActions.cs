@@ -62,6 +62,15 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Hand"",
+                    ""type"": ""Button"",
+                    ""id"": ""fe70722b-d569-47d2-82f0-5cd39851d818"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -196,6 +205,28 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Camera"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3a4f4642-9d3f-43d8-b478-354741f1cfae"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Hand"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e9e316da-981d-41f3-b6f2-93ad9a3b9f9a"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Hand"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -208,6 +239,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         m_Move_Throttle = m_Move.FindAction("Throttle", throwIfNotFound: true);
         m_Move_Steer = m_Move.FindAction("Steer", throwIfNotFound: true);
         m_Move_Camera = m_Move.FindAction("Camera", throwIfNotFound: true);
+        m_Move_Hand = m_Move.FindAction("Hand", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -273,6 +305,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Move_Throttle;
     private readonly InputAction m_Move_Steer;
     private readonly InputAction m_Move_Camera;
+    private readonly InputAction m_Move_Hand;
     public struct MoveActions
     {
         private @InputActions m_Wrapper;
@@ -281,6 +314,7 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         public InputAction @Throttle => m_Wrapper.m_Move_Throttle;
         public InputAction @Steer => m_Wrapper.m_Move_Steer;
         public InputAction @Camera => m_Wrapper.m_Move_Camera;
+        public InputAction @Hand => m_Wrapper.m_Move_Hand;
         public InputActionMap Get() { return m_Wrapper.m_Move; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -302,6 +336,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Camera.started += instance.OnCamera;
             @Camera.performed += instance.OnCamera;
             @Camera.canceled += instance.OnCamera;
+            @Hand.started += instance.OnHand;
+            @Hand.performed += instance.OnHand;
+            @Hand.canceled += instance.OnHand;
         }
 
         private void UnregisterCallbacks(IMoveActions instance)
@@ -318,6 +355,9 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
             @Camera.started -= instance.OnCamera;
             @Camera.performed -= instance.OnCamera;
             @Camera.canceled -= instance.OnCamera;
+            @Hand.started -= instance.OnHand;
+            @Hand.performed -= instance.OnHand;
+            @Hand.canceled -= instance.OnHand;
         }
 
         public void RemoveCallbacks(IMoveActions instance)
@@ -341,5 +381,6 @@ public partial class @InputActions: IInputActionCollection2, IDisposable
         void OnThrottle(InputAction.CallbackContext context);
         void OnSteer(InputAction.CallbackContext context);
         void OnCamera(InputAction.CallbackContext context);
+        void OnHand(InputAction.CallbackContext context);
     }
 }

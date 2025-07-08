@@ -4,6 +4,7 @@ public class CarAudioController : MonoBehaviour
 {
     [Header("Audio Sources")]
     public AudioSource engineSource;
+    public AudioSource engineRevSource;
     public AudioSource throttleSource;
     public AudioSource tireSquealSource;
     public AudioSource windSource;
@@ -25,6 +26,16 @@ public class CarAudioController : MonoBehaviour
     public float engineVolumeMultiplier = 1.0f;
     public float baseEngineVolume = 0.4f;  // Base volume at idle
     public float maxEngineVolume = 0.8f;   // Max volume at redline
+    
+    [Header("Engine Response Curves")]
+    [Tooltip("Controls how pitch changes with RPM. X = RPM (0-1), Y = Pitch response (0-1)")]
+    public AnimationCurve enginePitchCurve = AnimationCurve.Linear(0f, 0f, 1f, 1f); // Custom pitch response curve
+    [Tooltip("Controls how volume changes with RPM. X = RPM (0-1), Y = Volume response (0-1)")]
+    public AnimationCurve engineVolumeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); // Custom volume response curve
+    
+    [Header("Engine Crossfade Settings")]
+    public float crossfadeStartRPM = 0.3f; // Start blending at 30% of max RPM (normalized)
+    public AnimationCurve crossfadeCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f); // Smooth transition curve
     
     [Header("Throttle Settings")]
     public float throttleVolumeMultiplier = 0.7f;
@@ -57,17 +68,36 @@ public class CarAudioController : MonoBehaviour
     
     void SetupAudioSources()
     {
-        // Engine setup
+        Debug.Log("=== Car Audio Controller Setup ===");
+        
+        // Engine idle setup
         if (engineSource != null && engineIdleClip != null)
         {
             engineSource.clip = engineIdleClip;
             engineSource.loop = true;
+            engineSource.volume = baseEngineVolume;
+            engineSource.pitch = 1;
             engineSource.Play();
-            Debug.Log("Engine audio source set up successfully");
+            Debug.Log("✓ Engine idle audio source set up successfully");
         }
         else
         {
-            Debug.LogWarning("Engine audio source or idle clip is missing!");
+            Debug.LogError($"✗ Engine idle audio FAILED - Source: {(engineSource != null ? "OK" : "MISSING")}, IdleClip: {(engineIdleClip != null ? "OK" : "MISSING")}");
+        }
+        
+        // Engine rev setup
+        if (engineRevSource != null && engineRevClip != null)
+        {
+            engineRevSource.clip = engineRevClip;
+            engineRevSource.loop = true;
+            engineRevSource.volume = 0f; // Start at 0, will blend in based on RPM
+            engineRevSource.pitch = 1;
+            engineRevSource.Play();
+            Debug.Log("✓ Engine rev audio source set up successfully");
+        }
+        else
+        {
+            Debug.LogError($"✗ Engine rev audio FAILED - Source: {(engineRevSource != null ? "OK" : "MISSING")}, RevClip: {(engineRevClip != null ? "OK" : "MISSING")}");
         }
         
         // Throttle setup
@@ -75,11 +105,13 @@ public class CarAudioController : MonoBehaviour
         {
             throttleSource.clip = throttleClip;
             throttleSource.loop = true;
-            Debug.Log("Throttle audio source set up successfully");
+            throttleSource.volume = 0f; // Start at 0, will be controlled by throttle input
+            throttleSource.pitch = 1f;
+            Debug.Log("✓ Throttle audio source set up successfully");
         }
         else
         {
-            Debug.LogWarning("Throttle audio source or clip is missing!");
+            Debug.LogError($"✗ Throttle audio FAILED - Source: {(throttleSource != null ? "OK" : "MISSING")}, Clip: {(throttleClip != null ? "OK" : "MISSING")}");
         }
         
         // Tire squeal setup
@@ -87,11 +119,13 @@ public class CarAudioController : MonoBehaviour
         {
             tireSquealSource.clip = tireSquealClip;
             tireSquealSource.loop = true;
-            Debug.Log("Tire squeal audio source set up successfully");
+            tireSquealSource.volume = 0f;
+            tireSquealSource.pitch = 0.8f;
+            Debug.Log("✓ Tire squeal audio source set up successfully");
         }
         else
         {
-            Debug.LogWarning("Tire squeal audio source or clip is missing!");
+            Debug.LogError($"✗ Tire squeal audio FAILED - Source: {(tireSquealSource != null ? "OK" : "MISSING")}, Clip: {(tireSquealClip != null ? "OK" : "MISSING")}");
         }
         
         // Wind setup
@@ -99,11 +133,13 @@ public class CarAudioController : MonoBehaviour
         {
             windSource.clip = windClip;
             windSource.loop = true;
-            Debug.Log("Wind audio source set up successfully");
+            windSource.volume = 0f;
+            windSource.pitch = 0.7f;
+            Debug.Log("✓ Wind audio source set up successfully");
         }
         else
         {
-            Debug.LogWarning("Wind audio source or clip is missing!");
+            Debug.LogError($"✗ Wind audio FAILED - Source: {(windSource != null ? "OK" : "MISSING")}, Clip: {(windClip != null ? "OK" : "MISSING")}");
         }
         
         // Gear shift setup
@@ -111,12 +147,16 @@ public class CarAudioController : MonoBehaviour
         {
             gearShiftSource.clip = gearShiftClip;
             gearShiftSource.loop = false;
-            Debug.Log("Gear shift audio source set up successfully");
+            gearShiftSource.volume = 0.8f;
+            gearShiftSource.pitch = 1f;
+            Debug.Log("✓ Gear shift audio source set up successfully");
         }
         else
         {
-            Debug.LogWarning("Gear shift audio source or clip is missing!");
+            Debug.LogError($"✗ Gear shift audio FAILED - Source: {(gearShiftSource != null ? "OK" : "MISSING")}, Clip: {(gearShiftClip != null ? "OK" : "MISSING")}");
         }
+        
+        Debug.Log("=== Audio Setup Complete ===");
     }
     
     void Update()
@@ -137,32 +177,49 @@ public class CarAudioController : MonoBehaviour
         
         // Calculate engine pitch based on RPM
         float rpmNormalized = Mathf.Clamp01((currentRPM - minEngineRPM) / (maxEngineRPM - minEngineRPM));
-        targetEnginePitch = Mathf.Lerp(minEnginePitch, maxEnginePitch, rpmNormalized);
+        float pitchCurveValue = enginePitchCurve.Evaluate(rpmNormalized);
+        targetEnginePitch = Mathf.Lerp(minEnginePitch, maxEnginePitch, pitchCurveValue);
         
-        // Calculate engine volume with better curve - more realistic engine sound
-        // Use a slight curve to make it sound more natural
-        float volumeCurve = rpmNormalized * rpmNormalized * 0.3f + rpmNormalized * 0.7f; // Slight quadratic curve
-        targetEngineVolume = Mathf.Lerp(baseEngineVolume, maxEngineVolume, volumeCurve) * engineVolumeMultiplier;
+        // Calculate base engine volume
+        float volumeCurveValue = engineVolumeCurve.Evaluate(rpmNormalized);
+        float baseVolume = Mathf.Lerp(baseEngineVolume, maxEngineVolume, volumeCurveValue) * engineVolumeMultiplier;
         
-        // Add throttle influence to volume (engine gets louder under load)
-        float throttleVolumeBoost = throttleInput * 0.2f; // Up to 20% volume boost under throttle
-        targetEngineVolume += throttleVolumeBoost;
+        // Add throttle influence to volume
+        float throttleVolumeBoost = throttleInput * 0.2f;
+        baseVolume += throttleVolumeBoost;
+        baseVolume = Mathf.Clamp(baseVolume, 0f, 1f);
         
-        // Clamp final volume
-        targetEngineVolume = Mathf.Clamp(targetEngineVolume, 0f, 1f);
+        // Calculate crossfade blend factor (0 = idle only, 1 = rev only)
+        float blendFactor = Mathf.Clamp01((rpmNormalized - crossfadeStartRPM) / (1f - crossfadeStartRPM));
         
-        // Smooth transitions - faster for pitch, slower for volume to avoid audio pops
+        // Apply smooth crossfade curve for more natural transition
+        blendFactor = crossfadeCurve.Evaluate(blendFactor);
+        
+        // Calculate volumes for each source
+        float idleVolume = baseVolume * (1f - blendFactor);
+        float revVolume = baseVolume * blendFactor;
+        
+        // Update idle source
         engineSource.pitch = Mathf.Lerp(engineSource.pitch, targetEnginePitch, Time.deltaTime * 8f);
-        engineSource.volume = Mathf.Lerp(engineSource.volume, targetEngineVolume, Time.deltaTime * 4f);
+        engineSource.volume = Mathf.Lerp(engineSource.volume, idleVolume, Time.deltaTime * 4f);
         
-        // Switch between idle and rev clips based on RPM
-        if (currentRPM > minEngineRPM + 500f && engineRevClip != null && engineSource.clip != engineRevClip)
+        // Update rev source (if available)
+        if (engineRevSource != null)
         {
-            engineSource.clip = engineRevClip;
+            engineRevSource.pitch = Mathf.Lerp(engineRevSource.pitch, targetEnginePitch, Time.deltaTime * 8f);
+            engineRevSource.volume = Mathf.Lerp(engineRevSource.volume, revVolume, Time.deltaTime * 4f);
+            
+            // Ensure rev source is playing
+            if (!engineRevSource.isPlaying && engineRevClip != null)
+            {
+                engineRevSource.Play();
+            }
         }
-        else if (currentRPM <= minEngineRPM + 500f && engineIdleClip != null && engineSource.clip != engineIdleClip)
+        
+        // Ensure idle source is always playing
+        if (!engineSource.isPlaying)
         {
-            engineSource.clip = engineIdleClip;
+            engineSource.Play();
         }
     }
     
@@ -256,11 +313,41 @@ public class CarAudioController : MonoBehaviour
         lateralSlip = slip;
         isShifting = shifting;
         
-        // Debug log audio values once per second
-        if (Time.time % 1f < 0.1f)
+        // Enhanced debug logging - shows which audio sources are actually playing
+        if (Time.time % 2f < 0.1f) // Every 2 seconds
         {
             float rpmNormalized = Mathf.Clamp01((currentRPM - minEngineRPM) / (maxEngineRPM - minEngineRPM));
-            Debug.Log($"Audio Debug - RPM: {currentRPM:F0}/{maxEngineRPM:F0} ({rpmNormalized:F2}), Throttle: {throttleInput:F2}, Speed: {currentSpeed:F1}, Volume: {(engineSource != null ? engineSource.volume : 0f):F2}");
+            
+            Debug.Log($"=== Audio Status ===");
+            Debug.Log($"RPM: {currentRPM:F0}/{maxEngineRPM:F0} ({rpmNormalized:F2}), Throttle: {throttleInput:F2}, Speed: {currentSpeed:F1}, Slip: {lateralSlip:F2}");
+            Debug.Log($"Pitch Curve: {(enginePitchCurve != null ? enginePitchCurve.Evaluate(rpmNormalized) : 0f):F2}, Volume Curve: {(engineVolumeCurve != null ? engineVolumeCurve.Evaluate(rpmNormalized) : 0f):F2}");
+            
+            // Check each audio source status
+            string engineStatus = engineSource != null ? 
+                (engineSource.isPlaying ? $"PLAYING (Vol: {engineSource.volume:F2}, Pitch: {engineSource.pitch:F2})" : "STOPPED") : "MISSING";
+            Debug.Log($"Engine Idle: {engineStatus}");
+            
+            string engineRevStatus = engineRevSource != null ? 
+                (engineRevSource.isPlaying ? $"PLAYING (Vol: {engineRevSource.volume:F2}, Pitch: {engineRevSource.pitch:F2})" : "STOPPED") : "MISSING";
+            Debug.Log($"Engine Rev: {engineRevStatus}");
+            
+            string throttleStatus = throttleSource != null ? 
+                (throttleSource.isPlaying ? $"PLAYING (Vol: {throttleSource.volume:F2})" : "STOPPED") : "MISSING";
+            Debug.Log($"Throttle: {throttleStatus}");
+            
+            string squealStatus = tireSquealSource != null ? 
+                (tireSquealSource.isPlaying ? $"PLAYING (Vol: {tireSquealSource.volume:F2})" : "STOPPED") : "MISSING";
+            Debug.Log($"Tire Squeal: {squealStatus}");
+            
+            string windStatus = windSource != null ? 
+                (windSource.isPlaying ? $"PLAYING (Vol: {windSource.volume:F2})" : "STOPPED") : "MISSING";
+            Debug.Log($"Wind: {windStatus}");
+            
+            string gearStatus = gearShiftSource != null ? 
+                (gearShiftSource.isPlaying ? "PLAYING" : "READY") : "MISSING";
+            Debug.Log($"Gear Shift: {gearStatus}");
+            
+            Debug.Log($"====================");
         }
     }
 }

@@ -11,6 +11,9 @@ using UnityEngine.InputSystem;
 [Serializable]
 public class Engine
 {
+    public bool targetRPM = false;
+    public float currentTarget = 0f;
+    public bool forceAdjacentGears = false; // Force transmission to only shift to adjacent gears
     public bool constantTorque = false; // Constant torque, e.g. for electric motors or vehicles
     public float idleRPM = 800f; // Koenigsegg idle RPM
     public float maxRPM = 8500f; // Koenigsegg redline (Jesko/modern engines)
@@ -18,9 +21,12 @@ public class Engine
     public float[] gearRatios = { 3.31f, 2.27f, 1.69f, 1.32f, 1.02f, 0.82f, 0.67f, 0.56f, 0.46f }; // 9-speed LST ratios (estimated)
     public float finalDriveRatio = 3.73f; // Estimated for Koenigsegg
     private int currentGear = 0;
+    private int previousGear = -1; // Track previous gear to prevent rapid switching back
+    private float lastGearChangeTime = 0f; // Time when last gear change occurred
+    private float gearCooldown = 1f; // 1 second cooldown before switching back to previous gear
     public bool automaticTransmission = true;
     private bool switchingGears = false;
-    private float gearChangeTime = 0.02f; // Light Speed Transmission is incredibly fast
+    private float gearChangeTime = 0.09f; // Light Speed Transmission is incredibly fast, 0.02 default
     private float rpm = 0f;
     private bool engineInitialized = false;
     public void SetRPM(float averageWheelAngularVelocity)
@@ -80,7 +86,9 @@ public class Engine
     {
         if (currentGear < gearRatios.Length - 1 && !switchingGears)
         {
+            previousGear = currentGear;
             currentGear++;
+            lastGearChangeTime = Time.time;
             switchingGears = true;
             // Start coroutine to reset switchingGears after 0.4 seconds
             context.StartCoroutine(ResetSwitchingGearsCoroutine());
@@ -91,7 +99,9 @@ public class Engine
     {
         if (currentGear > 0 && !switchingGears)
         {
+            previousGear = currentGear;
             currentGear--;
+            lastGearChangeTime = Time.time;
             switchingGears = true;
             // Start coroutine to reset switchingGears after 0.4 seconds
             context.StartCoroutine(ResetSwitchingGearsCoroutine());
@@ -110,20 +120,109 @@ public class Engine
     }
 
     // Enhanced gear shifting logic for Koenigsegg
-    public void checkGearSwitching(MonoBehaviour context)
+    public void checkGearSwitching(MonoBehaviour context, float throttle)
     {
         if (switchingGears) return;
 
-        // Shift up at 95% of redline
-        if (rpm > maxRPM * 0.95f && currentGear < gearRatios.Length - 1)
+        // Safety override: Always try to shift up if RPM is too high (prevent rev limiter)
+        if (rpm > maxRPM * 0.91f && currentGear < gearRatios.Length - 1)
         {
             UpGear(context);
+            return;
         }
-        // Shift down if RPM drops below 40% of redline to stay in power band
-        else if (rpm < maxRPM * 0.4f && currentGear > 0)
+
+        if (!targetRPM) {
+            currentTarget = 0.7f * maxRPM;
+        }
+        float tolerance = 0.2f * maxRPM;
+
+        if (targetRPM) {
+            float newTarget = Mathf.Clamp(maxRPM * throttle, idleRPM, maxRPM*0.8f);
+            if (newTarget >= currentTarget) currentTarget = newTarget;
+            else currentTarget = Mathf.Lerp(currentTarget, newTarget, 0.002f);
+        }
+
+        if (forceAdjacentGears)
         {
-            DownGear(context);
+            // Find optimal gear but only shift one gear at a time towards it
+            int optimalGear = FindOptimalGear(currentTarget);
+            
+            // Always shift towards optimal gear if it's different
+            if (optimalGear > currentGear && currentGear < gearRatios.Length - 1)
+            {
+                // Check if we're trying to switch back to previous gear within cooldown
+                int targetGear = currentGear + 1;
+                if (targetGear != previousGear || Time.time - lastGearChangeTime > gearCooldown)
+                {
+                    // Optimal gear is higher, shift up one gear
+                    UpGear(context);
+                }
+            }
+            else if (optimalGear < currentGear && currentGear > 0)
+            {
+                // Check if we're trying to switch back to previous gear within cooldown
+                int targetGear = currentGear - 1;
+                if (targetGear != previousGear || Time.time - lastGearChangeTime > gearCooldown)
+                {
+                    // Optimal gear is lower, shift down one gear
+                    DownGear(context);
+                }
+            }
         }
+        else
+        {
+            // Find the optimal gear that gets closest to target RPM
+            int optimalGear = FindOptimalGear(currentTarget);
+            
+            // Only shift if we're not already in the optimal gear and outside tolerance
+            if (optimalGear != currentGear && (rpm > currentTarget + tolerance || rpm < currentTarget - tolerance))
+            {
+                // Check if we're trying to switch back to previous gear within cooldown
+                if (optimalGear != previousGear || Time.time - lastGearChangeTime > gearCooldown)
+                {
+                    previousGear = currentGear;
+                    currentGear = optimalGear;
+                    lastGearChangeTime = Time.time;
+                    switchingGears = true;
+                    context.StartCoroutine(ResetSwitchingGearsCoroutine());
+                }
+            }
+        }
+    }
+
+    private int FindOptimalGear(float targetRPM)
+    {
+        // Get current wheel angular velocity to calculate RPM in different gears
+        float currentWheelRPM = rpm / (Math.Abs(gearRatios[currentGear] * finalDriveRatio));
+        
+        int bestGear = currentGear;
+        float bestDifference = float.MaxValue;
+        
+        // Check each gear to find which one gets closest to target RPM
+        for (int gear = 0; gear < gearRatios.Length; gear++)
+        {
+            float totalRatio = Math.Abs(gearRatios[gear] * finalDriveRatio);
+            float projectedRPM = Mathf.Max(idleRPM, currentWheelRPM * totalRatio);
+            
+            // Clamp to engine limits
+            projectedRPM = Mathf.Clamp(projectedRPM, idleRPM, maxRPM);
+            
+            float difference = Math.Abs(projectedRPM - targetRPM);
+            
+            // Prefer this gear if it's closer to target RPM
+            if (difference < bestDifference)
+            {
+                bestDifference = difference;
+                bestGear = gear;
+            }
+            // If differences are very close, prefer higher gear for efficiency
+            else if (Math.Abs(difference - bestDifference) < 50f && gear > bestGear)
+            {
+                bestGear = gear;
+            }
+        }
+        
+        return bestGear;
     }
 
     public float getRPM()
@@ -224,8 +323,10 @@ public class Car : MonoBehaviour
     public Vector2 RawInput = Vector2.zero;
     private InputAction move;
     private InputAction Throttle;
+    private InputAction Hand; // handbrake
     private InputAction Steer;
     public float carSpeedFactor = 0.03f;
+    float handbrakeInput = 0f;
 
     void Start()
     {
@@ -278,6 +379,8 @@ public class Car : MonoBehaviour
         move.Enable();
         Throttle = input.Move.Throttle;
         Throttle.Enable();
+        Hand = input.Move.Hand;
+        Hand.Enable();
         Steer = input.Move.Steer;
         Steer.Enable();
     }
@@ -285,6 +388,7 @@ public class Car : MonoBehaviour
     {
         move.Disable();
         Throttle.Disable();
+        Hand.Disable();
         Steer.Disable();
     }
 
@@ -303,12 +407,14 @@ public class Car : MonoBehaviour
         Vector2 moveInput = move.ReadValue<Vector2>();
         float steerInput = Steer.ReadValue<float>();
         float throttleInput = Throttle.ReadValue<float>();
-        
+        handbrakeInput = Hand.ReadValue<float>();
+
         // Add NaN checks for input values
         if (float.IsNaN(moveInput.x) || float.IsInfinity(moveInput.x)) moveInput.x = 0f;
         if (float.IsNaN(moveInput.y) || float.IsInfinity(moveInput.y)) moveInput.y = 0f;
         if (float.IsNaN(steerInput) || float.IsInfinity(steerInput)) steerInput = 0f;
         if (float.IsNaN(throttleInput) || float.IsInfinity(throttleInput)) throttleInput = 0f;
+        if (float.IsNaN(handbrakeInput) || float.IsInfinity(handbrakeInput)) handbrakeInput = 0f;
         
         userInput.x = Mathf.Lerp(userInput.x, (moveInput.x + steerInput) / (1 + rb.velocity.magnitude * carSpeedFactor), 50f * Time.deltaTime);
         userInput.y = Mathf.Lerp(userInput.y, moveInput.y + throttleInput, 50f * Time.deltaTime);
@@ -414,7 +520,7 @@ public class Car : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.E)) e.UpGear(this);
         else if (Input.GetKeyDown(KeyCode.D)) e.DownGear(this);
 
-        e.checkGearSwitching(this);
+        e.checkGearSwitching(this, throttleInput);
 
         // Update audio values
         if (audioController != null)
@@ -429,7 +535,7 @@ public class Car : MonoBehaviour
             
             // Update audio controller with current car state
             audioController.UpdateAudioValues(
-                e.getRPM(),                           // rpm
+                e.getRPM(),                          // rpm
                 Mathf.Max(0f, userInput.y),          // throttle (only positive values)
                 rb.velocity.magnitude,               // speed
                 averageSlip,                         // slip
@@ -521,7 +627,7 @@ public class Car : MonoBehaviour
 
             w.angularVelocity += (w.torque - longitudinalFriction * w.size - rollingResistanceTorque) / inertia * Time.fixedDeltaTime;
             w.angularVelocity *= 1 - w.braking * w.brakeStrength * Time.fixedDeltaTime;
-            if (Input.GetKey(KeyCode.Space)) // Handbrake
+            if (handbrakeInput > 0.5f) // Handbrake
             {
                 w.angularVelocity = 0;
             }
@@ -631,7 +737,6 @@ public class Car : MonoBehaviour
                     }
                     w.skidTrail = null;
                 }
-                averageWheelAngularVelocity += w.angularVelocity;
             }
             else
             {
@@ -644,6 +749,10 @@ public class Car : MonoBehaviour
                     w.skidTrail = null;
                 }
             }
+            
+            // Always accumulate wheel angular velocity for engine RPM calculation, regardless of grounded state
+            averageWheelAngularVelocity += w.angularVelocity;
+            
             wheelVisual.Rotate(
                 Vector3.right,
                 w.angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime,
