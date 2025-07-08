@@ -22,13 +22,30 @@ public class Engine
     private bool switchingGears = false;
     private float gearChangeTime = 0.02f; // Light Speed Transmission is incredibly fast
     private float rpm = 0f;
+    private bool engineInitialized = false;
     public void SetRPM(float averageWheelAngularVelocity)
     {
+        // Initialize engine at idle RPM on first call
+        if (!engineInitialized)
+        {
+            this.rpm = idleRPM;
+            engineInitialized = true;
+            return;
+        }
+        
+        // Add NaN checks to prevent engine RPM issues
+        if (float.IsNaN(averageWheelAngularVelocity) || float.IsInfinity(averageWheelAngularVelocity))
+            averageWheelAngularVelocity = 0f;
+            
         float averageWheelRPM = (averageWheelAngularVelocity * 60f) / (2f * Mathf.PI);
         float totalRatio = Math.Abs(gearRatios[currentGear] * finalDriveRatio);
         float transmissionRPM = averageWheelRPM * totalRatio;
         float targetRPM = Mathf.Max(idleRPM, transmissionRPM);
         this.rpm = Mathf.Clamp(targetRPM, idleRPM, maxRPM);
+        
+        // Additional NaN check for final RPM value
+        if (float.IsNaN(this.rpm) || float.IsInfinity(this.rpm))
+            this.rpm = idleRPM;
     }
     // Enhanced power curve for Koenigsegg engine
     public float GetCurrentPower(MonoBehaviour context) // 0-1 based on RPM
@@ -165,6 +182,9 @@ public class Car : MonoBehaviour
     public float coefFrictionMultiplier = 1.0f; // Multiplier for friction coefficient
     public Vector3 centerOfDownforce = new Vector3(0, 0, 0);
     
+    [Header("Audio")]
+    public CarAudioController audioController;
+    
     [Header("Aerodynamics")]
     public float dragCoefficient = 0.278f; // Jesko Absolut value
     public float frontalArea = 1.88f; // m² - Jesko Absolut frontal area
@@ -242,6 +262,9 @@ public class Car : MonoBehaviour
 
         rb.centerOfMass += COMOffset;
         rb.inertiaTensor *= Inertia;
+        
+        // Initialize engine at idle RPM
+        e.SetRPM(0f);
     }
 
     void Awake()
@@ -277,9 +300,23 @@ public class Car : MonoBehaviour
         }
 
         // Get player input for reference
-        userInput.x = Mathf.Lerp(userInput.x, (move.ReadValue<Vector2>()[0] + Steer.ReadValue<float>()) / (1 + rb.velocity.magnitude * carSpeedFactor), 50f * Time.deltaTime);
-        userInput.y = Mathf.Lerp(userInput.y, move.ReadValue<Vector2>()[1] + Throttle.ReadValue<float>(), 50f * Time.deltaTime);
+        Vector2 moveInput = move.ReadValue<Vector2>();
+        float steerInput = Steer.ReadValue<float>();
+        float throttleInput = Throttle.ReadValue<float>();
+        
+        // Add NaN checks for input values
+        if (float.IsNaN(moveInput.x) || float.IsInfinity(moveInput.x)) moveInput.x = 0f;
+        if (float.IsNaN(moveInput.y) || float.IsInfinity(moveInput.y)) moveInput.y = 0f;
+        if (float.IsNaN(steerInput) || float.IsInfinity(steerInput)) steerInput = 0f;
+        if (float.IsNaN(throttleInput) || float.IsInfinity(throttleInput)) throttleInput = 0f;
+        
+        userInput.x = Mathf.Lerp(userInput.x, (moveInput.x + steerInput) / (1 + rb.velocity.magnitude * carSpeedFactor), 50f * Time.deltaTime);
+        userInput.y = Mathf.Lerp(userInput.y, moveInput.y + throttleInput, 50f * Time.deltaTime);
         isBraking = userInput.y < 0 && forwards ? Mathf.Abs(userInput.y) : 0f;
+        
+        // Add NaN checks for final userInput values
+        if (float.IsNaN(userInput.x) || float.IsInfinity(userInput.x)) userInput.x = 0f;
+        if (float.IsNaN(userInput.y) || float.IsInfinity(userInput.y)) userInput.y = 0f;
 
         // Adaptive braking wing animation
         if (adaptiveBrakingWing != null) {
@@ -359,14 +396,46 @@ public class Car : MonoBehaviour
                 w.input.y = Mathf.Lerp(w.input.y, finalThrottle, 0.95f * Time.deltaTime * 60f);
             } else w.input.y = userInput.y;
             
-            if (float.IsNaN(w.input.y) || float.IsInfinity(w.input.y))
-                w.input.y = 0f;
+            // Add comprehensive NaN checks for wheel input
+            if (float.IsNaN(w.input.x) || float.IsInfinity(w.input.x)) w.input.x = 0f;
+            if (float.IsNaN(w.input.y) || float.IsInfinity(w.input.y)) w.input.y = 0f;
+            
+            // Clamp input values to reasonable range
+            w.input.x = Mathf.Clamp(w.input.x, -1f, 1f);
+            w.input.y = Mathf.Clamp(w.input.y, -1f, 1f);
+            
+            // Debug input values to verify they're working
+            if (Time.time % 1f < 0.1f && i == 0) // Log once per second for first wheel only
+            {
+                Debug.Log($"Input Debug - userInput: {userInput}, wheel input: {w.input}, TCS: {w.tcsReduction}, steerReduction: {w.steeringReduction}");
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.E)) e.UpGear(this);
         else if (Input.GetKeyDown(KeyCode.D)) e.DownGear(this);
 
         e.checkGearSwitching(this);
+
+        // Update audio values
+        if (audioController != null)
+        {
+            // Calculate average slip from all wheels
+            float averageSlip = 0f;
+            for (int i = 0; i < wheels.Length; i++)
+            {
+                averageSlip += wheels[i].slip;
+            }
+            averageSlip /= wheels.Length;
+            
+            // Update audio controller with current car state
+            audioController.UpdateAudioValues(
+                e.getRPM(),                           // rpm
+                Mathf.Max(0f, userInput.y),          // throttle (only positive values)
+                rb.velocity.magnitude,               // speed
+                averageSlip,                         // slip
+                e.isSwitchingGears()                 // shifting
+            );
+        }
     }
 
     // Add this method to calculate aerodynamic drag
@@ -388,8 +457,6 @@ public class Car : MonoBehaviour
         rb.AddForce(dragForce / 200f, ForceMode.Force);
     }
 
-
-
     void FixedUpdate()
     {
         // Apply aerodynamic drag calculation
@@ -406,13 +473,30 @@ public class Car : MonoBehaviour
             Transform wheelObj = w.wheelObject.transform;
             Transform wheelVisual = wheelObj.GetChild(0);
 
-            wheelObj.localRotation = Quaternion.Euler(0, w.turnAngle * w.input.x, 0);
+            // Add NaN checks for wheel rotation
+            float steerAngle = w.turnAngle * w.input.x;
+            if (float.IsNaN(steerAngle) || float.IsInfinity(steerAngle))
+            {
+                steerAngle = 0f;
+                Debug.LogWarning($"NaN detected in wheel steering angle. turnAngle: {w.turnAngle}, input.x: {w.input.x}");
+            }
+            wheelObj.localRotation = Quaternion.Euler(0, steerAngle, 0);
+            
             w.wheelWorldPosition = transform.TransformPoint(w.localPosition);
             Vector3 velocityAtWheel = rb.GetPointVelocity(w.wheelWorldPosition);
             w.localVelocity = wheelObj.InverseTransformDirection(velocityAtWheel);
             forwards = w.localVelocity.z > 0.1f;
-            w.torque = w.engineTorque * w.input.y * e.GetCurrentPower(this) * e.GetCurrentTotalGearRatio();
-            Debug.Log(w.torque + " is the torque on wheel " + w.wheelObject.name);
+            
+            // Debug torque calculation components
+            float enginePower = e.GetCurrentPower(this);
+            float gearRatio = e.GetCurrentTotalGearRatio();
+            w.torque = w.engineTorque * w.input.y * enginePower * gearRatio;
+            
+            // Debug logging for torque components
+            if (w.torque == 0f)
+            {
+                Debug.Log($"Torque Debug - engineTorque: {w.engineTorque}, input.y: {w.input.y}, enginePower: {enginePower}, gearRatio: {gearRatio}, RPM: {e.getRPM()}");
+            }
 
             float inertia = w.mass * w.size * w.size / 2f;
             float lateralVel = w.localVelocity.x;
@@ -458,8 +542,6 @@ public class Car : MonoBehaviour
             // Calculate the wheel's actual heading direction in local space
             // Keep your original slip angle calculation but add safety check:
 
-
-
             if (w.localVelocity.magnitude > 0.5f) // Only calculate when moving
             {
                 // Calculate the velocity angle
@@ -482,9 +564,6 @@ public class Car : MonoBehaviour
             {
                 w.xSlipAngle = Mathf.Lerp(w.xSlipAngle, 0f, Time.fixedDeltaTime * 5f);
             }
-
-
-
 
             if (grounded)
             {
