@@ -491,6 +491,8 @@ public class Car : MonoBehaviour
             }
             w.braking = isBraking * (1 - w.tcsReduction);
 
+            float maxTilt = 8f + rb.velocity.magnitude;
+
             if (!motorCycleControl)w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
             else {
                 // Motorcycle physics: steering based on lean angle
@@ -509,11 +511,21 @@ public class Car : MonoBehaviour
                 // Tilt damping opposes tilt angular velocity to prevent roll oscillation
                 float tiltDampingComponent = tiltAngularVelocity * motorcycleTiltDamping;
                 tiltDampingComponent = Mathf.Clamp(tiltDampingComponent, -40f, 40f);
+                
+                // If tiltDampingComponent is pushing the bike to a more extreme angle, set tiltDampingComponent to zero
+                if ((currentLeanAngle > 0f && tiltDampingComponent < 0f) || (currentLeanAngle < 0f && tiltDampingComponent > 0f))
+                {
+                    tiltDampingComponent *= 0.3f;
+                }
+
+                // blend user input to limit to maxTilt
+                float blend = Mathf.Clamp01(Mathf.Abs(currentLeanAngle) / maxTilt);
+
                 // Yaw damping opposes yaw angular velocity to prevent turning oscillation
                 float yawDampingComponent = yawAngularVelocity * motorcycleYawDamping;
                 yawDampingComponent = Mathf.Clamp(yawDampingComponent, -30f, 30f);
                 
-                float leanSteering = (currentLeanAngle + userInput.x * 15f * (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f) + tiltDampingComponent + yawDampingComponent) / 45f;
+                float leanSteering = (currentLeanAngle * (1 + Mathf.Max(blend- (Mathf.Min(rb.velocity.magnitude/10f, 1)), 0) * 3f) + userInput.x * (1-blend) * 45f * (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f) + tiltDampingComponent + yawDampingComponent) / 45f;
                 leanSteering = Mathf.Clamp(leanSteering, -1f, 1f);
                 
                 // Combine lean-based steering with slight user input for responsiveness
