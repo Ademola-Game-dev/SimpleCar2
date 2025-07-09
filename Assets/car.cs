@@ -276,7 +276,11 @@ public class WheelProperties
 
 public class Car : MonoBehaviour
 {
+    public bool motorCycleControl = false;
+    public float motorcycleTiltDamping = 2f; // Damping factor for motorcycle tilt oscillation
+    public float motorcycleYawDamping = 1f; // Damping factor for motorcycle yaw oscillation
     public float restoreStrength = 1f; // Strength of restoring force when sliding
+    public float restoreStrengthY = 1f; // Strength of restoring force when sliding
     public float steerAssistTarget = 0.75f; // Target slip ratio for steering assist
     public float coefFrictionMultiplier = 1.0f; // Multiplier for friction coefficient
     public Vector3 centerOfDownforce = new Vector3(0, 0, 0);
@@ -397,9 +401,10 @@ public class Car : MonoBehaviour
         // detect press of r key, reset rotation and move 2 units up
         if (Input.GetKeyDown(KeyCode.R))
         {
-            transform.rotation = Quaternion.identity;
+            float yrotation = transform.rotation.eulerAngles.y;
+            transform.rotation = Quaternion.Euler(0, yrotation, 0);
             transform.position += Vector3.up * 2f;
-            rb.velocity = Vector3.zero;
+            rb.velocity = transform.forward * 5f;
             rb.angularVelocity = Vector3.zero;
         }
 
@@ -486,7 +491,34 @@ public class Car : MonoBehaviour
             }
             w.braking = isBraking * (1 - w.tcsReduction);
 
-            w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
+            if (!motorCycleControl)w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
+            else {
+                // Motorcycle physics: steering based on lean angle
+                float currentLeanAngle = transform.localRotation.eulerAngles.z;
+                
+                // Convert from 0-360 to -180 to +180 range
+                if (currentLeanAngle > 180f)
+                    currentLeanAngle -= 360f;
+                
+                // Get angular velocities for damping
+                Vector3 localAngularVelocity = transform.InverseTransformDirection(rb.angularVelocity);
+                float tiltAngularVelocity = localAngularVelocity.z; // Z is forward axis (tilt direction)
+                float yawAngularVelocity = localAngularVelocity.y; // Y is up axis (yaw direction)
+                
+                // Calculate steering based on lean angle with damping
+                // Tilt damping opposes tilt angular velocity to prevent roll oscillation
+                float tiltDampingComponent = tiltAngularVelocity * motorcycleTiltDamping;
+                tiltDampingComponent = Mathf.Clamp(tiltDampingComponent, -40f, 40f);
+                // Yaw damping opposes yaw angular velocity to prevent turning oscillation
+                float yawDampingComponent = yawAngularVelocity * motorcycleYawDamping;
+                yawDampingComponent = Mathf.Clamp(yawDampingComponent, -30f, 30f);
+                
+                float leanSteering = (currentLeanAngle + userInput.x * 15f * (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f) + tiltDampingComponent + yawDampingComponent) / 45f;
+                leanSteering = Mathf.Clamp(leanSteering, -1f, 1f);
+                
+                // Combine lean-based steering with slight user input for responsiveness
+                w.input.x = -leanSteering / (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f);
+            }
             // if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Clamp(w.xSlipAngle / w.turnAngle, -1f, 1f);
             if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, w.xSlipAngle / w.turnAngle, Time.deltaTime);
 
@@ -571,6 +603,7 @@ public class Car : MonoBehaviour
         rb.AddForceAtPosition(-transform.up * rb.velocity.magnitude * downforce / 28f, transform.position + transform.TransformDirection(centerOfDownforce), ForceMode.Acceleration);
 
         rb.AddForceAtPosition(-0.9f * transform.right * transform.InverseTransformDirection(rb.velocity).x, transform.position + transform.TransformDirection(new Vector3(0, 0, -1.5f * restoreStrength)), ForceMode.Acceleration);
+        rb.AddForceAtPosition(-0.9f * transform.up * transform.InverseTransformDirection(rb.velocity).y, transform.position + transform.TransformDirection(new Vector3(0, 0, -1.5f * restoreStrengthY)), ForceMode.Acceleration);
         float averageWheelAngularVelocity = 0f;
         foreach (var w in wheels)
         {
@@ -616,6 +649,7 @@ public class Car : MonoBehaviour
 
             // Calculate rolling resistance torque (applied per wheel)
             float rollingResistanceTorque = 0f;
+            if (motorCycleControl && w.normalForce < (9.81f * w.mass * 0.3f)) userInput.y = 0f;
             if (grounded)
             {
                 // Rolling resistance is proportional to normal force on this wheel
