@@ -491,7 +491,8 @@ public class Car : MonoBehaviour
             }
             w.braking = isBraking * (1 - w.tcsReduction);
 
-            float maxTilt = 8f + rb.velocity.magnitude;
+            float maxTilt = 8f + rb.velocity.magnitude*2;
+            maxTilt = Mathf.Min(maxTilt, 65f);
 
             if (!motorCycleControl)w.input.x = Mathf.Lerp(w.input.x, userInput.x * (1f - w.steeringReduction), Time.deltaTime * 60f);
             else {
@@ -515,7 +516,7 @@ public class Car : MonoBehaviour
                 // If tiltDampingComponent is pushing the bike to a more extreme angle, set tiltDampingComponent to zero
                 if ((currentLeanAngle > 0f && tiltDampingComponent < 0f) || (currentLeanAngle < 0f && tiltDampingComponent > 0f))
                 {
-                    tiltDampingComponent *= 0.3f;
+                    tiltDampingComponent *= 0.7f;
                 }
 
                 // blend user input to limit to maxTilt
@@ -525,7 +526,7 @@ public class Car : MonoBehaviour
                 float yawDampingComponent = yawAngularVelocity * motorcycleYawDamping;
                 yawDampingComponent = Mathf.Clamp(yawDampingComponent, -30f, 30f);
                 
-                float leanSteering = (currentLeanAngle * (1 + Mathf.Max(blend- (Mathf.Min(rb.velocity.magnitude/10f, 1)), 0) * 3f) + userInput.x * (1-blend) * 45f * (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f) + tiltDampingComponent + yawDampingComponent) / 45f;
+                float leanSteering = (currentLeanAngle * (1 + Mathf.Max(blend- (Mathf.Min(rb.velocity.magnitude/20f, 1)), 0) * 3f) + userInput.x * (1-blend) * 30f * (1 + rb.velocity.magnitude / 60f) * (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f) + tiltDampingComponent * (1.8f - blend * 0.5f) + yawDampingComponent) / 45f;
                 leanSteering = Mathf.Clamp(leanSteering, -1f, 1f);
                 
                 // Combine lean-based steering with slight user input for responsiveness
