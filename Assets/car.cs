@@ -530,7 +530,7 @@ public class Car : MonoBehaviour
                 leanSteering = Mathf.Clamp(leanSteering, -1f, 1f);
                 
                 // Combine lean-based steering with slight user input for responsiveness
-                w.input.x = -leanSteering / (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f);
+                w.input.x = Mathf.Lerp(w.input.x, -leanSteering / (1 + Mathf.Max(0, rb.velocity.magnitude - 2f) / 3f), Time.deltaTime * 60f);
             }
             // if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Clamp(w.xSlipAngle / w.turnAngle, -1f, 1f);
             if (w.slip > 1.0f && steeringAssist) w.input.x = Mathf.Lerp(w.input.x, w.xSlipAngle / w.turnAngle, Time.deltaTime);
